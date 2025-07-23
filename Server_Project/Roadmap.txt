@@ -1,0 +1,4 @@
+1. Method for transferring answers between clients (done)
+2. Add password protection (done)
+3. Connection Timeout handling (done)
+4. integrate with mini games program  (done)
