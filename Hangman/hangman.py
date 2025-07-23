@@ -1,5 +1,5 @@
 import random
-from os import system
+import os
 from time import sleep
 
 
@@ -7,17 +7,25 @@ from time import sleep
 def cls(pause_time=0):
 
     sleep(pause_time)
-    system('cls')
+    os.system('cls')
 
 
 # Choose random word from words file
 def choose_word():
-
-    with open('words.txt', 'r') as file:
-        word = file.readlines()
-        word = random.choice(word).strip()
-
-    return word
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        words_path = os.path.join(script_dir, 'words.txt')
+        with open(words_path, 'r') as file:
+            word = file.readlines()
+            word = random.choice(word).strip()
+            return word
+    except FileNotFoundError:
+        print("Error: 'words.txt' file not found. Please ensure the file exists in the same directory as this script.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+    
 
 
 # Function for user to guess whole word
@@ -112,18 +120,34 @@ def user_progress_equals_word(magic_word=str, user_progress=str):
         else:
             return False
     return True
-
+def choose_diffuclty():
+    while True:
+        user_input = input("Choose difficulty level (1 for easy, 2 for medium, 3 for hard): ")
+        if user_input == '1':
+            return 16  # Easy
+        elif user_input == '2':
+            return 12   # Medium
+        elif user_input == '3':
+            return 8   # Hard
+        else:
+            print("Invalid choice. Please choose 1, 2, or 3.")
 
 # main for game logic
 def game():
 
     magic_word = choose_word()
+    if magic_word is None:
+        print("Game cannot start without a valid word. Exiting.")
+        return True
     user_progress = coded_word(magic_word)
+    diffuclty = choose_diffuclty()
     print(user_progress)
     User_guesses = 0
 
+
+
     # main loop for each guess
-    while User_guesses < 10:
+    while User_guesses < diffuclty:
 
         user_choice = input("Would you like to guess a letter or the whole word? (1 for letter, 2 for word): ")
 
@@ -140,7 +164,7 @@ def game():
             else:
                 User_guesses += 1
                 cls(1.5)
-                print(f"Current progress: {user_progress}" + f" You have {10 - User_guesses} guesses left.")
+                print(f"Current progress: {user_progress}" + f" You have {diffuclty - User_guesses} guesses left.")
 
         # if user wants to guess whole word
         elif user_choice == '2':
@@ -153,7 +177,7 @@ def game():
             else:
                 User_guesses += 1
                 cls()
-                print(f"Incorrect guess. You have {10 - User_guesses} guesses left." + f"\ncurrent progress: {user_progress}")
+                print(f"Incorrect guess. You have {diffuclty - User_guesses} guesses left." + f"\ncurrent progress: {user_progress}")
 
         # if user doesn't make valid choice
         else:
@@ -161,7 +185,7 @@ def game():
             cls(1.5)
 
     # if user doesn't guess in time
-    if User_guesses == 10:
+    if User_guesses == diffuclty:
         print(f'You failed to guess the word in time. The word was "{magic_word}"')
 
 
@@ -172,7 +196,8 @@ def main():
     print("Try to guess the word letter by letter or by guessing the whole word!")
     
     # main game logic
-    game()
+    if game() == True:
+        return
 
     # play again loop
     while True:
