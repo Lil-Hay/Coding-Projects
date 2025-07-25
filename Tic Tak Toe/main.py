@@ -134,18 +134,7 @@ def game():
     global board
     board = grid(3, 3, ".")
     turns = 1
-
-    while True:
-        user_input = input('Would you like to play first (Y/N): ').lower()
-        match user_input:
-            case 'y':
-                player_first = True
-                break
-            case 'n':
-                player_first = False
-                break
-            case _ :
-                invaid_choice("Please enter a valid answer (Y/N)", False)
+    
     
     while True:
         clear(0)
@@ -194,6 +183,8 @@ def main():
     clear(0)
     print("Welcome to Tik Tak Toe!")
     clear()
+    global player_first
+    player_first = True
     game()
 
     while True:
@@ -201,6 +192,7 @@ def main():
         user_input = input("Would you like to play again (Y/N): ").lower()
         match user_input:
             case "y":
+                player_first = not player_first
                 display_stats(Stats)
                 game()
             case "n":
