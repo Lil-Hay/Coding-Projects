@@ -84,18 +84,8 @@ def ai_choice():
         if board.get(x, y) == ".":
             board.set(x, y, "O")
             return
-
-def board_filled():
-    x = 0
-    y = 0
-    for i in range(3):
-        for i in range(3):
-            if board.get(x, y) == ".":
-                return False
-            y += 1
-        y = 0
-        x += 1
-    return True
+        
+        
 
 def winner():
     winner = check_winner()
