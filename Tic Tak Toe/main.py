@@ -13,11 +13,12 @@ def clear(pause=1.5):
     sleep(pause)
     system("cls")
 
-def invaid_choice(message="Please enter a valid number (1-3)"):
+def invaid_choice(message="Please enter a valid number (1-3)", print_board=True):
     clear(0)
     print(message)
     clear(1.5)
-    print(board)
+    if print_board == True:
+        print(board)
 
 def grab_input():
     
@@ -128,35 +129,64 @@ def check_winner():
         return board.get(2, 0)
     return None
 
+
 def game():
     global board
     board = grid(3, 3, ".")
     turns = 1
 
     while True:
+        user_input = input('Would you like to play first (Y/N): ').lower()
+        match user_input:
+            case 'y':
+                player_first = True
+                break
+            case 'n':
+                player_first = False
+                break
+            case _ :
+                invaid_choice("Please enter a valid answer (Y/N)", False)
+    
+    while True:
         clear(0)
-        print(board)
 
-        grab_input()
-        if turns > 2:
-            if winner() == True:
-                return
-        
-        if turns == 5:
-            break
-        
-        ai_choice()
-        if turns > 2:
-            if winner() == True:
-                return
+        match player_first:
+            case True:
+                print(board)
+                grab_input()
+                if turns > 2:
+                    if winner() == True:
+                        return
+                
+                if turns == 5:
+                    break
+                
+                ai_choice()
+                if turns > 2:
+                    if winner() == True:
+                        return
+            case False:
+                ai_choice()
+                if turns > 2:
+                    if winner() == True:
+                        return
+                
+                if turns == 5:
+                    break
+                
+                print(board)
+                grab_input()
+                if turns > 2:
+                    if winner() == True:
+                        return
+
         turns += 1
-
     clear(0)
     Stats[2] += 1
     print(board)
     print("Game Over")
     
-
+    
 
 def main():
     global Stats
@@ -179,8 +209,7 @@ def main():
                     display_stats(Stats)
                 return
             case _ :
-                clear(0)
-                print("Please enter a valid input (Y/N)")
+                invaid_choice("Please enter a valid answer (Y/n)", False)
 
 
 
