@@ -77,10 +77,7 @@ if __name__ == "__main__":
     my_grid = Grid(3, 3, default_value='.')
     print("Initial Grid:")
     print(my_grid)
-
-    my_grid.set(0, 0, 'X')
-    my_grid.set(1, 1, 'O')
-    my_grid.set(2, 0, 'X')
+    
 
     print("\nModified Grid:")
     print(my_grid)
