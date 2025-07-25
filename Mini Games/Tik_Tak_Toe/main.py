@@ -1,7 +1,8 @@
-from grid import Grid as grid
+from .grid import Grid as grid
 from random import randint
 from os import system
 from time import sleep
+import Main_Menu
 
 def display_stats(stats):
     stats = stats
@@ -57,7 +58,6 @@ def grab_input():
                 return
             else:
                 invaid_choice("Already used, try again")
-
 
 def ai_choice():
     # Try to win
@@ -191,23 +191,33 @@ def main():
     player_first = True
     game()
 
+
     while True:
         clear()
-        user_input = input("Would you like to play again (Y/N): ").lower()
-        match user_input:
-            case "y":
-                player_first = not player_first
-                display_stats(Stats)
-                game()
-            case "n":
-                played_once = Stats[0] + Stats[1] + Stats[2]
-                if played_once != 1:
+        try:
+            user_input = int(input("Would you like to play again (1), Return to Main Menu (2), or Exit (3): "))
+            match user_input:
+                case 1:
+                    player_first = not player_first
                     display_stats(Stats)
-                return
-            case _ :
-                invaid_choice("Please enter a valid answer (Y/n)", False)
+                    game()
+                case 2:
+                    played_once = Stats[0] + Stats[1] + Stats[2]
+                    if played_once != 1:
+                        display_stats(Stats)
+                    Main_Menu.main()
+                case 3:
+                    played_once = Stats[0] + Stats[1] + Stats[2]
+                    if played_once != 1:
+                        display_stats(Stats)
+                    return
+                case _ :
+                    invaid_choice("Please enter a valid answer (1-3)", False)
+        except:
+            invaid_choice("Please enter a valid answer (1-3)", False)
 
 
+        
 
 
 
