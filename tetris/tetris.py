@@ -121,10 +121,10 @@ def draw_buttons(screen, width, height, cell_size, replay=False, pause=False):
         rects.append(rect)
     return rects
 
-def save_score(score):
+def save_score(name, score):
     try:
         with open("tetris_scores.txt", "a") as f:
-            f.write(str(score) + "\n")
+            f.write(f"{name.upper()} {score}\n")
     except Exception as e:
         print(f"Could not save score: {e}")
 
@@ -138,6 +138,50 @@ def get_high_score():
     except Exception as e:
         print(f"Could not read scores: {e}")
         return 0
+
+def get_high_scores(top_n=3):
+    if not os.path.exists("tetris_scores.txt"):
+        return []
+    try:
+        with open("tetris_scores.txt", "r") as f:
+            entries = []
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) == 2 and parts[1].isdigit():
+                    entries.append((parts[0], int(parts[1])))
+            entries.sort(key=lambda x: x[1], reverse=True)
+            return entries[:top_n]
+    except Exception as e:
+        print(f"Could not read scores: {e}")
+        return []
+
+def get_username(screen, width, height):
+    font = pygame.font.SysFont('Arial', 36)
+    name = ""
+    active = True
+    while active:
+        screen.fill((0,0,0))
+        prompt = font.render("Enter your 3-letter name:", True, (255,255,255))
+        name_disp = font.render(name, True, (255,255,0))
+        # Center both prompt and name on the whole screen
+        prompt_y = screen.get_height() // 2 - prompt.get_height() - 10
+        name_y = screen.get_height() // 2 + 10
+        screen.blit(prompt, (screen.get_width() // 2 - prompt.get_width() // 2, prompt_y))
+        screen.blit(name_disp, (screen.get_width() // 2 - name_disp.get_width() // 2, name_y))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and len(name) == 3:
+                    active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    name = name[:-1]
+                elif len(name) < 3 and event.unicode.isalpha():
+                    name += event.unicode.upper()
+        pygame.time.wait(50)
+    return name
 
 def game_loop(screen, clock, cell_size, width, height):
     board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
@@ -165,7 +209,14 @@ def game_loop(screen, clock, cell_size, width, height):
         if paused:
             font = pygame.font.SysFont('Arial', 48)
             pause_text = font.render("Paused", True, (255, 255, 0))
-            screen.blit(pause_text, (width//2 - pause_text.get_width()//2, height//2 - 24))
+            # Center on the whole screen, not just the grid
+            screen.blit(
+                pause_text,
+                (
+                    screen.get_width() // 2 - pause_text.get_width() // 2,
+                    screen.get_height() // 2 - pause_text.get_height() // 2
+                )
+            )
             pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -174,7 +225,6 @@ def game_loop(screen, clock, cell_size, width, height):
                     paused = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mx, my = event.pos
-                    # Pause button is always the last
                     if button_rects[-1].collidepoint(mx, my):
                         paused = False
             pygame.time.wait(100)
@@ -278,6 +328,10 @@ def game_loop(screen, clock, cell_size, width, height):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return score, False
+            elif event.type == pygame.ACTIVEEVENT:
+                if event.state & 2:  # 2 = focus state
+                    if event.gain == 0:
+                        paused = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     old_shape = current.shape
@@ -329,18 +383,25 @@ def main():
         if not game_over:
             break  # User closed window
 
-        save_score(score)
-        high_score = get_high_score()
+        # Prompt for username
+        name = get_username(screen, width, height)
+        save_score(name, score)
+
+        high_scores = get_high_scores(3)
 
         # Game Over screen
         font = pygame.font.SysFont('Arial', 48)
         over_text = font.render("Game Over!", True, (255, 0, 0))
         score_text = font.render(f"Score: {score}", True, (255,255,255))
-        high_score_text = font.render(f"High Score: {high_score}", True, (255,255,0))
         screen.fill((0,0,0))
-        screen.blit(over_text, (screen.get_width()//2 - over_text.get_width()//2, screen.get_height()//2 - 90))
-        screen.blit(score_text, (screen.get_width()//2 - score_text.get_width()//2, screen.get_height()//2 - 30))
-        screen.blit(high_score_text, (screen.get_width()//2 - high_score_text.get_width()//2, screen.get_height()//2 + 30))
+        screen.blit(over_text, (screen.get_width()//2 - over_text.get_width()//2, screen.get_height()//2 - 110))
+        screen.blit(score_text, (screen.get_width()//2 - score_text.get_width()//2, screen.get_height()//2 - 50))
+
+        # Draw top 3 high scores with names
+        small_font = pygame.font.SysFont('Arial', 32)
+        for i, (uname, hs) in enumerate(high_scores):
+            hs_text = small_font.render(f"{i+1}. {uname}: {hs}", True, (255,255,0))
+            screen.blit(hs_text, (screen.get_width()//2 - hs_text.get_width()//2, screen.get_height()//2 + 10 + i*40))
         button_rects = draw_buttons(screen, width, height + 50, cell_size, replay=True)
         pygame.display.flip()
 
