@@ -1,5 +1,22 @@
 import pygame
 import random
+import os
+
+# --- Add these at the top, after your imports and before your config ---
+def get_screen_size(fullscreen):
+    if fullscreen:
+        info = pygame.display.Info()
+        return info.current_w, info.current_h
+    else:
+        return CELL_SIZE * COLS, CELL_SIZE * ROWS  # <-- Remove +50 here!
+
+def recalc_sizes(screen_width, screen_height):
+    # Leave 50px for buttons at the bottom
+    grid_height = screen_height - 50
+    cell_size = min(screen_width // COLS, grid_height // ROWS)
+    width = cell_size * COLS
+    height = cell_size * ROWS
+    return cell_size, width, height
 
 # Game config
 CELL_SIZE = 30
@@ -71,27 +88,58 @@ def new_tetromino():
     color = COLORS[idx]
     return Tetromino(COLS // 2 - len(shape[0]) // 2, 0, shape, color)
 
-def draw_buttons(screen, width, height, cell_size, replay=False):
+def draw_buttons(screen, width, height, cell_size, replay=False, pause=False):
     button_h = 50
     button_y = height - button_h
-    button_w = width // (5 if replay else 4)
-    colors = [(200,200,200)]*(5 if replay else 4)
+    button_count = 4 + int(replay) + int(pause)
+    button_w = min(width // button_count, 120)  # Limit max width for better text fit
+    total_buttons_width = button_w * button_count
+    start_x = (width - total_buttons_width) // 2
+
+    colors = [(200,200,200)]*button_count
     labels = ["LEFT", "ROTATE", "RIGHT", "DOWN"]
+    if pause:
+        labels.append("PAUSE")
     if replay:
         labels.append("REPLAY")
-    font = pygame.font.SysFont('Arial', 20)
+    font_size = min(24, button_w // 4)
+    font = pygame.font.SysFont('Arial', font_size, bold=True)
     rects = []
     for i in range(len(labels)):
-        rect = pygame.Rect(i*button_w, button_y, button_w, button_h)
+        rect = pygame.Rect(start_x + i*button_w, button_y, button_w, button_h)
         pygame.draw.rect(screen, colors[i], rect)
         pygame.draw.rect(screen, (100,100,100), rect, 2)
-        label = font.render(labels[i], True, (0,0,0))
-        label_rect = label.get_rect(center=rect.center)
-        screen.blit(label, label_rect)
+        # Shrink text if needed
+        label = labels[i]
+        label_surface = font.render(label, True, (0,0,0))
+        while label_surface.get_width() > button_w - 10 and font_size > 10:
+            font_size -= 1
+            font = pygame.font.SysFont('Arial', font_size, bold=True)
+            label_surface = font.render(label, True, (0,0,0))
+        label_rect = label_surface.get_rect(center=rect.center)
+        screen.blit(label_surface, label_rect)
         rects.append(rect)
     return rects
 
-def game_loop(screen, clock):
+def save_score(score):
+    try:
+        with open("tetris_scores.txt", "a") as f:
+            f.write(str(score) + "\n")
+    except Exception as e:
+        print(f"Could not save score: {e}")
+
+def get_high_score():
+    if not os.path.exists("tetris_scores.txt"):
+        return 0
+    try:
+        with open("tetris_scores.txt", "r") as f:
+            scores = [int(line.strip()) for line in f if line.strip().isdigit()]
+        return max(scores) if scores else 0
+    except Exception as e:
+        print(f"Could not read scores: {e}")
+        return 0
+
+def game_loop(screen, clock, cell_size, width, height):
     board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
     current = new_tetromino()
     fall_time = 0
@@ -103,11 +151,34 @@ def game_loop(screen, clock):
     held_button_idx = None
     move_delay = 100  # ms between moves when holding
     last_move_time = pygame.time.get_ticks()
+    paused = False
 
     while running:
         screen.fill((0, 0, 0))
         fall_time += clock.get_rawtime()
         clock.tick(FPS)
+
+        # Draw touch buttons (with pause, but NOT replay)
+        button_rects = draw_buttons(screen, screen.get_width(), screen.get_height(), cell_size, pause=True, replay=False)
+
+        # Pause logic
+        if paused:
+            font = pygame.font.SysFont('Arial', 48)
+            pause_text = font.render("Paused", True, (255, 255, 0))
+            screen.blit(pause_text, (width//2 - pause_text.get_width()//2, height//2 - 24))
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return score, False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                    paused = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = event.pos
+                    # Pause button is always the last
+                    if button_rects[-1].collidepoint(mx, my):
+                        paused = False
+            pygame.time.wait(100)
+            continue
 
         # Move down
         if fall_time / 1000 > fall_speed:
@@ -122,12 +193,18 @@ def game_loop(screen, clock):
                     running = False  # Game over
             fall_time = 0
 
+        offset_x = (screen.get_width() - width) // 2
+        offset_y = (screen.get_height() - 50 - height) // 2
+
         # Draw board
         for y in range(ROWS):
             for x in range(COLS):
                 color = board[y][x]
                 if color:
-                    pygame.draw.rect(screen, color, (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                    pygame.draw.rect(
+                        screen, color,
+                        (offset_x + x * cell_size, offset_y + y * cell_size, cell_size, cell_size)
+                    )
         # Draw current tetromino
         for y, row in enumerate(current.image()):
             for x, cell in enumerate(row):
@@ -135,21 +212,23 @@ def game_loop(screen, clock):
                     pygame.draw.rect(
                         screen,
                         current.color,
-                        ((current.x + x) * CELL_SIZE, (current.y + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                        (offset_x + (current.x + x) * cell_size, offset_y + (current.y + y) * cell_size, cell_size, cell_size)
                     )
         # Draw grid
         for x in range(COLS):
-            pygame.draw.line(screen, (40, 40, 40), (x * CELL_SIZE, 0), (x * CELL_SIZE, HEIGHT))
+            pygame.draw.line(screen, (40, 40, 40),
+                             (offset_x + x * cell_size, offset_y),
+                             (offset_x + x * cell_size, offset_y + height))
         for y in range(ROWS):
-            pygame.draw.line(screen, (40, 40, 40), (0, y * CELL_SIZE), (WIDTH, y * CELL_SIZE))
+            pygame.draw.line(screen, (40, 40, 40),
+                             (offset_x, offset_y + y * cell_size),
+                             (offset_x + width, offset_y + y * cell_size))
 
         # Draw score
         font = pygame.font.SysFont('Arial', 24)
         score_text = font.render(f"Score: {score}", True, (255,255,255))
-        screen.blit(score_text, (5, 5))
-
-        # Draw touch buttons
-        button_rects = draw_buttons(screen, WIDTH, HEIGHT + 50, CELL_SIZE)
+        score_rect = score_text.get_rect(center=(screen.get_width() // 2, 20))
+        screen.blit(score_text, score_rect)
 
         pygame.display.flip()
 
@@ -191,6 +270,8 @@ def game_loop(screen, clock):
                 current.y += 1
                 if check_collision(board, current.image(), (current.x, current.y)):
                     current.y -= 1
+            elif held_button_idx == 4:  # PAUSE
+                paused = True
             last_move_time = now
 
         # --- Events ---
@@ -204,6 +285,21 @@ def game_loop(screen, clock):
                     if check_collision(board, current.image(), (current.x, current.y)):
                         current.shape = old_shape
                     last_move_time = pygame.time.get_ticks()
+                elif event.key == pygame.K_p:
+                    paused = True
+                elif event.key == pygame.K_f:
+                    # Toggle fullscreen
+                    is_fullscreen = screen.get_flags() & pygame.FULLSCREEN
+                    if is_fullscreen:
+                        # Windowed mode
+                        screen_width, screen_height = get_screen_size(False)
+                        cell_size, width, height = recalc_sizes(screen_width, screen_height)
+                        screen = pygame.display.set_mode((width, height + 50))
+                    else:
+                        # Fullscreen mode
+                        screen_width, screen_height = get_screen_size(True)
+                        cell_size, width, height = recalc_sizes(screen_width, screen_height)
+                        screen = pygame.display.set_mode((width, height + 50), pygame.FULLSCREEN)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = event.pos
                 for i, rect in enumerate(button_rects):
@@ -211,6 +307,8 @@ def game_loop(screen, clock):
                         held_button_idx = i
                         mouse_held = True
                         last_move_time = pygame.time.get_ticks() - move_delay  # move instantly
+                        if i == 4:  # PAUSE
+                            paused = True
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_held = False
                 held_button_idx = None
@@ -219,23 +317,31 @@ def game_loop(screen, clock):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT + 50))  # Extra space for buttons
+    fullscreen = False
+    screen_width, screen_height = get_screen_size(fullscreen)
+    cell_size, width, height = recalc_sizes(screen_width, screen_height)
+    screen = pygame.display.set_mode((width, height + 50))  # Default windowed
     pygame.display.set_caption("Tetris")
     clock = pygame.time.Clock()
 
     while True:
-        score, game_over = game_loop(screen, clock)
+        score, game_over = game_loop(screen, clock, cell_size, width, height)
         if not game_over:
             break  # User closed window
+
+        save_score(score)
+        high_score = get_high_score()
 
         # Game Over screen
         font = pygame.font.SysFont('Arial', 48)
         over_text = font.render("Game Over!", True, (255, 0, 0))
         score_text = font.render(f"Score: {score}", True, (255,255,255))
+        high_score_text = font.render(f"High Score: {high_score}", True, (255,255,0))
         screen.fill((0,0,0))
-        screen.blit(over_text, (WIDTH//2 - over_text.get_width()//2, HEIGHT//2 - 60))
-        screen.blit(score_text, (WIDTH//2 - score_text.get_width()//2, HEIGHT//2))
-        button_rects = draw_buttons(screen, WIDTH, HEIGHT + 50, CELL_SIZE, replay=True)
+        screen.blit(over_text, (screen.get_width()//2 - over_text.get_width()//2, screen.get_height()//2 - 90))
+        screen.blit(score_text, (screen.get_width()//2 - score_text.get_width()//2, screen.get_height()//2 - 30))
+        screen.blit(high_score_text, (screen.get_width()//2 - high_score_text.get_width()//2, screen.get_height()//2 + 30))
+        button_rects = draw_buttons(screen, width, height + 50, cell_size, replay=True)
         pygame.display.flip()
 
         waiting = True
@@ -244,6 +350,15 @@ def main():
                 if event.type == pygame.QUIT:
                     waiting = False
                     return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        screen_width, screen_height = get_screen_size(fullscreen)
+                        cell_size, width, height = recalc_sizes(screen_width, screen_height)
+                        if fullscreen:
+                            screen = pygame.display.set_mode((width, height + 50), pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode((width, height + 50))
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mx, my = event.pos
                     if len(button_rects) == 5 and button_rects[4].collidepoint(mx, my):
