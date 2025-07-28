@@ -1,5 +1,11 @@
 import struct
 import socket
+from time import sleep as wait
+from random import randrange
+
+
+
+
 
 def create_socket(clients=1, production=False):
     Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create socket object
@@ -18,7 +24,7 @@ def create_socket(clients=1, production=False):
         return Socket 
 
 
-def send(message, Client, command=None):
+def send(message='', Client=False, command=None):
     """
         Sends message to client or clients.
 
@@ -50,6 +56,8 @@ def send(message, Client, command=None):
             Client.send(message.encode('utf-8'))
         except:
             print("Connection Lost on send")
+            main()
+            return
 
 
 def receive(client, type=int):
@@ -75,10 +83,36 @@ def receive(client, type=int):
             return client.recv(1024).decode('utf-8')
         except:
             print("Connection Lost on receive")
+            main()
+            return
+
+def game():
+    send('This is a test to see if connection still works here', False, '12')
 
 
 
-#def game():
+
+
+
+
+
+def game_main():
+    if 'Stats' not in globals():
+        global Stats
+        Stats = [0, 0, 0] #[0] = Wins, [1] = losses, [2] = ties
+    
+    if "Client_1_First" not in globals():
+        global Client_1_First
+        Client_1_First = bool(randrange(0, 2))
+    
+    wait(1.5)
+
+    game()
+
+    
+    
+
+
 
 
 def main():
@@ -96,9 +130,9 @@ def main():
         send("Waiting for Second Player", Client_1, "2")
         Client_2, addr2 = Server.accept()
         print(f"Connected to second client {addr2}")
-        send("Welcome to Tik Tak Toe!", False, '123')
+        send("Welcome to Tik Tak Toe!", False, '12')
 
-        #game()
+        game_main()
 
     
 

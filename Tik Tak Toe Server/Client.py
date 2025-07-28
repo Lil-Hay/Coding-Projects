@@ -101,7 +101,10 @@ def receive():
             already_print = True
             status = receive()
 
-        if already_print != True:
+        try:
+            if already_print != True:
+                print(Server_message)
+        except:
             print(Server_message)
 
         return status
