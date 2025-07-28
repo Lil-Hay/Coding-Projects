@@ -13,7 +13,7 @@ def clear(pause=1.5):
     sleep(pause)
     system("cls")
 
-def invaid_choice(message="Please enter a valid number (1-3)", print_board=True):
+def invalid_choice(message="Please enter a valid number (1-3)", print_board=True):
     clear(0)
     print(message)
     clear(1.5)
@@ -30,9 +30,9 @@ def grab_input():
                 if x > -1 and x < 3:
                     break
                 else:
-                    invaid_choice()
+                    invalid_choice()
             except:
-                invaid_choice()
+                invalid_choice()
         while True:
             try:
                 y = int(input("Please enter row to play (1-3) or 4 to go back: ")) - 1    
@@ -44,11 +44,11 @@ def grab_input():
                     print(board)
                     break
                 else:
-                    invaid_choice()
+                    invalid_choice()
                     go_back = True
                     break
             except:
-                invaid_choice()
+                invalid_choice()
                 go_back = True
                 break
         if go_back != True:        
@@ -56,7 +56,7 @@ def grab_input():
                 board.set(x, y, "X")
                 return
             else:
-                invaid_choice("Already used, try again")
+                invalid_choice("Already used, try again")
 
 
 def ai_choice():
@@ -195,7 +195,7 @@ def main():
                     display_stats(Stats)
                 return
             case _ :
-                invaid_choice("Please enter a valid answer (Y/n)", False)
+                invalid_choice("Please enter a valid answer (Y/n)", False)
 
 
 

@@ -1,15 +1,21 @@
 import socket
 import struct
 from os import system
+from time import sleep
 # function to grab user input, checks to make sure user input is an int
 def grab_user_input(type=int): 
 
     if type == int:
         while True:
-            try: 
+            try:
                 user_input = int(input())
             except:
-                print('Please enter a number, EX.("8")')
+                system('cls')
+                print("Please enter a number not text")
+                sleep(1.5)
+                system("cls")
+                for I in message_history:
+                    print(I)
             else:
                 return user_input
     if type == str:
@@ -73,10 +79,31 @@ def send(message):
             print("Looks like connection failed on send")
             return True # return true to end main loop
 
+def delete_msg_history(all=False):
 
+    if all == True:
+        for I in message_history:
+            message_history.pop()
+    else:
+        for I in message_history:
+            try:
+                message_history.remove('Waiting for Second Player')
+            except:
+                pass
+            try:
+                message_history.remove('Welcome to Tik Tak Toe!')
+            except:
+                pass
+        
 
 # receive fuction
 def receive():
+    if 'message_history' not in globals():
+        global message_history
+        message_history = []
+    if message_history != None:
+        delete_msg_history()
+        
     status = False
     # Display server's message
     try: # try catch to handle lost connection
@@ -97,15 +124,18 @@ def receive():
 
         if Server_message.find('SECOND_MESSAGE') != -1:
             Server_message = Server_message.replace('SECOND_MESSAGE', '')
+            message_history.append(Server_message)
             print(Server_message)
             already_print = True
             status = receive()
 
         try:
             if already_print != True:
+                message_history.append(Server_message)
                 print(Server_message)
         except:
             print(Server_message)
+            message_history.append(Server_message)
 
         return status
 
@@ -114,19 +144,6 @@ def receive():
                 
 
         # Add future elif statements for other edge cases that sever sends
-
-def new_receive():
-    status = False
-    # Display server's message
-    try: # try catch to handle lost connection
-        Server_message = Comm.recv(1024).decode("utf-8")
-
-    except:
-        print("Looks like connection failed on receive")
-        return True # return true to end main loop
-    
-    else:
-        Server_message.find("")
 
 
 # reconnect function
@@ -157,7 +174,7 @@ def reconnect():
 
 # Main Loop
 def Main():
-
+    
     while True: # infinite loop
         type = int
         server_response = receive()
@@ -165,9 +182,9 @@ def Main():
             break
         if server_response == str:
             type = str
-
         if send(type) == True: # Send will return True if something goes wrong
             break
+        delete_msg_history(True)
     
     reconnect() # check if user wishes to reconnect
 
