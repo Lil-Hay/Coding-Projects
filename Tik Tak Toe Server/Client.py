@@ -39,7 +39,7 @@ def connect():
         # first arg is ip second is port
         # ip of server 192.168.1.149
         # Local host is socket.gethostbyname(socket.gethostname())
-        Comm.connect((socket.gethostbyname(socket.gethostname()), 9090))
+        Comm.connect("192.168.1.149", 9090))
 
     except: # if connection can't be made
        reconnect_attempts += 1
