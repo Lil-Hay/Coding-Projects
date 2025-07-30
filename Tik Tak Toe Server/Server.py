@@ -340,7 +340,7 @@ def grab_user(Client):
 def main():
     global restart
     global Server
-    Server = create_socket(2)
+    Server = create_socket(2, True)
     while True:
 
         restart = False
