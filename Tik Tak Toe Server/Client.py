@@ -47,7 +47,8 @@ def connect():
 
     else: # if connection is made tell user of it and start main loop for program
         #Comm.settimeout(2.0) # set timeout to check for dissconnects/second messages
-        print("Connection Succeseful")
+        system('cls')
+        print("Connection Succeseful... Waiting for a response from server.")
         reconnect_attempts = 0
         Main()
 

@@ -5,6 +5,19 @@ from random import randrange
 from grid import Grid as grid
 import Files
 
+def close_both():
+    global Client_1, Client_2
+    try:
+        send("Other play lost connection... restarting server.", Client_1, "14")
+    except:
+        pass
+    Client_1.close()
+    try:
+        send("Other play lost connection... restarting server.", Client_1, "14")
+    except:
+        pass
+    Client_2.close()
+
 
 def create_socket(clients=1, production=False):
     Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create socket object
@@ -54,6 +67,7 @@ def send(message='', Client=False, command=None):
         except:
             print("Connection Failed on send to both clients")
             restart = True
+            close_both()
             return
     else:        
         try: # try catch so server doesn't crash with unhandled exception
@@ -61,6 +75,7 @@ def send(message='', Client=False, command=None):
         except:
             print("Connection Failed on send to client")
             restart = True
+            close_both()
             return
 
 
@@ -81,6 +96,7 @@ def receive(client, type=int):
     
         except: #handle exception
             print("Connection Failed on receive int")
+            close_both()
             restart = True
             return
             
@@ -89,6 +105,7 @@ def receive(client, type=int):
             return client.recv(1024).decode('utf-8')
         except:
             print("Connection Falied on receive str")
+            close_both()
             restart = True
             return
         
@@ -254,13 +271,22 @@ def game():
             
             turns += 1
     
+
+    # Game Ties
     send(board_str()+ '\nGame Tied!', False, '12')
     Files.write_stats(Client_1, "T")
     Files.write_stats(Client_2, "T")
     return
         
 
-
+def send_stats():
+    global Client_1_Nick, Client_2_Nick
+    Client_1_Stats = Files.read_stats(Client_1_Nick)
+    Client_2_Stats = Files.read_stats(Client_2_Nick)
+    send(f'"{Client_1_Nick}" has {Client_1_Stats["W"]} Wins, {Client_1_Stats["L"]} Losses, and {Client_1_Stats["T"]} Ties!'
+         + f'\n"{Client_2_Nick}" has {Client_2_Stats["W"]} Wins, {Client_2_Stats["L"]} Losses, and {Client_2_Stats["T"]} Ties!',
+        False, "2")
+    return
 
 
 
@@ -273,13 +299,15 @@ def game_main():
         if "Client_1_First" not in globals():
             global Client_1_First
             Client_1_First = bool(randrange(0, 2))
-    
-        wait(1.5)
+
+        send_stats()
+
+        wait(3)
 
         game()
 
         Client_1_First = not Client_1_First
-        wait(1.5)
+
 
     
 def grab_user(Client):
@@ -331,6 +359,7 @@ def main():
             print(f"Connected to second client {addr2}")
             grab_user(Client_2)
             send("Welcome to Tik Tak Toe!", False, '12')
+        
 
         if restart == False:
             game_main()

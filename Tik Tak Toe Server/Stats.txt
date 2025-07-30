@@ -1,2 +1,2 @@
-Nickname="Ryan" W=4 L=6 T=0 (END)
-Nickname="Hayden" W=6 L=4 T=0 (END)
+Nickname="Ryan" W=4 L=8 T=0 (END)
+Nickname="Hayden" W=8 L=4 T=0 (END)
