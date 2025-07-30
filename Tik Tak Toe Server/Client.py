@@ -49,7 +49,7 @@ def connect():
         # first arg is ip second is port
         # ip of server 192.168.1.149
         # Local host is socket.gethostbyname(socket.gethostname())
-        Comm.connect(("192.168.1.128", 12345))
+        Comm.connect(("192.168.1.128", 9090))
 
     except Exception as e:# if connection can't be made
        print(e) 
