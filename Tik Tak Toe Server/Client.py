@@ -19,8 +19,18 @@ def grab_user_input(type=int):
             else:
                 return user_input
     if type == str:
-        user_input = input()
-        return user_input
+        while True:
+
+            user_input = input()
+            if user_input == '':
+                system("cls")
+                print("Please enter something")
+                sleep(1.5)
+                system("cls")
+                print(message_history[0])
+            elif user_input != None:
+                return user_input
+        
 
 
 
@@ -39,9 +49,10 @@ def connect():
         # first arg is ip second is port
         # ip of server 192.168.1.149
         # Local host is socket.gethostbyname(socket.gethostname())
-        Comm.connect("192.168.1.128", 9090)
+        Comm.connect(("192.168.1.128", 12345))
 
-    except: # if connection can't be made
+    except Exception as e:# if connection can't be made
+       print(e) 
        reconnect_attempts += 1
        reconnect()
 
