@@ -114,10 +114,17 @@ def receive():
         return True # return true to end main loop
     
     else: 
+
         if Server_message.find('CLEAR_SCREEN') != -1:
             system('cls')
             Server_message = Server_message.replace('CLEAR_SCREEN', '')
 
+        if Server_message.find('DISCONNECT') != -1:
+            Server_message = Server_message.replace('DISCONNECT', '')
+            print(Server_message)
+            print("Server wishes to Disconnect")
+            return True
+        
         if Server_message.find('TYPE=STR') != -1:
             Server_message = Server_message.replace('TYPE=STR', '')
             status = str
@@ -128,6 +135,8 @@ def receive():
             print(Server_message)
             already_print = True
             status = receive()
+
+        
 
         try:
             if already_print != True:

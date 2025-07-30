@@ -1,3 +1,0 @@
-Nickname="Admin" W=1 L=3 T=5 (END)
-Nickname="Beta"  W=1 L=3 T=5 (END)
-Nickname="Alpha"  W=1 L=3 T=5 (END)

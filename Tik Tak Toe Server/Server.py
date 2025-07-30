@@ -3,7 +3,7 @@ import socket
 from time import sleep as wait
 from random import randrange
 from grid import Grid as grid
-import Stats
+import Files
 
 
 def create_socket(clients=1, production=False):
@@ -30,7 +30,7 @@ def send(message='', Client=False, command=None):
         Args:
             message: enter message to send.
             Client: pass client object to send to or pass False to send to both objects.
-            command: "1" tells client to clear screen, "2" tells client to expect consecutive messages, "3" specifies to expect str. add any combination to execute.
+            command: "1" tells client to clear screen, "2" tells client to expect consecutive messages, "3" specifies to expect str. add any combination to execute, "4" tells client to disconnect.
         """
     global restart
     if command != None:
@@ -43,20 +43,23 @@ def send(message='', Client=False, command=None):
         if command.find('3') != -1:
             message += 'TYPE=STR'
 
+        if command.find('4') != -1:
+            message += 'DISCONNECT'
+
     
     if Client == False:
         try:
             Client_1.send(message.encode('utf-8'))
             Client_2.send(message.encode('utf-8'))
         except:
-            print("Connection failed on send")
+            print("Connection Failed on send to both clients")
             restart = True
             return
     else:        
         try: # try catch so server doesn't crash with unhandled exception
             Client.send(message.encode('utf-8'))
         except:
-            print("Connection Lost on send")
+            print("Connection Failed on send to client")
             restart = True
             return
 
@@ -77,7 +80,7 @@ def receive(client, type=int):
             return int(decoded_transmission) # return back int to use with other fuctions
     
         except: #handle exception
-            print("Connection Lost on receive")
+            print("Connection Failed on receive int")
             restart = True
             return
             
@@ -85,7 +88,7 @@ def receive(client, type=int):
         try:
             return client.recv(1024).decode('utf-8')
         except:
-            print("Connection Lost on receive")
+            print("Connection Falied on receive str")
             restart = True
             return
         
@@ -178,14 +181,14 @@ def winner():
             send(board_str(), False, '12')
             send("You Won!", Client_1, '2')
             send("You Lost", Client_2, '2')
-            Stats.write_stats(Client_2_Nick, "L")
-            Stats.write_stats(Client_1_Nick, "W")
+            Files.write_stats(Client_2_Nick, "L")
+            Files.write_stats(Client_1_Nick, "W")
         case 'O': # Client 2 wins
             send(board_str(), False, '12')
             send("You Won!", Client_2, '2')
             send("You Lost", Client_1, '2')
-            Stats.write_stats(Client_1_Nick, "L")
-            Stats.write_stats(Client_2_Nick, "W")
+            Files.write_stats(Client_1_Nick, "L")
+            Files.write_stats(Client_2_Nick, "W")
         case _:
             return
     return True
@@ -252,8 +255,8 @@ def game():
             turns += 1
     
     send(board_str()+ '\nGame Tied!', False, '12')
-    Stats.write_stats(Client_1, "T")
-    Stats.write_stats(Client_2, "T")
+    Files.write_stats(Client_1, "T")
+    Files.write_stats(Client_2, "T")
     return
         
 
@@ -279,15 +282,29 @@ def game_main():
         wait(1.5)
 
     
-def grab_nick(Client):
-    send("Enter a Nickname:", Client, "13")
+def grab_user(Client):
+    send("Enter your Nickname:", Client, "13")
 
     if Client==Client_1:
         global Client_1_Nick
         Client_1_Nick = receive(Client, str)
+        username = Client_1_Nick
     elif Client==Client_2:
         global Client_2_Nick
         Client_2_Nick = receive(Client, str)
+        username = Client_2_Nick
+
+    tries = 0
+    while tries < 5:
+        send("Enter your password:", Client, "13")
+        if Files.Password_Correct(username, receive(Client, str)) == True:
+            return
+        
+    send("Too many failed attempts. If you'd like to change your password contact Server Admin", Client, "14")
+    Client.close()
+    return
+    
+
 
 
 
@@ -303,16 +320,18 @@ def main():
        
         # getting ready for players
         global Client_1, Client_2
+
         Client_1, addr1 = Server.accept()
         print(f"Connected to first client {addr1}")
-        grab_nick(Client_1)
-        send("Waiting for Second Player", Client_1, "2")
+        grab_user(Client_1)
+        send("Waiting for Second Player", Client_1, "12")
 
         if restart == False:
             Client_2, addr2 = Server.accept()
             print(f"Connected to second client {addr2}")
-            grab_nick(Client_2)
+            grab_user(Client_2)
             send("Welcome to Tik Tak Toe!", False, '12')
+
         if restart == False:
             game_main()
 

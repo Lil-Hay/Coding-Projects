@@ -156,14 +156,18 @@ def write_stats(nickname, stat):
         user = find_user(nickname)
 
     except FileNotFoundError: # if file not created yet
+
         try:
             with open("Stats.txt", 'x') as f:
                 Stats = stat_to_modify(stat)
                 f.write(f'Nickname="{nickname}" W={Stats["W"]} L={Stats["L"]} T={Stats["T"]} (END)\n') # no newline character
                 return
+            
         except Exception as e: # if program can't create file
             print(f"Won't create file: {e}")
             return
+        
+
     except Exception as e:
         print(f'write_stats problem: {e}')
         return    
@@ -182,3 +186,71 @@ def write_stats(nickname, stat):
         
     modify_existing_stat(nickname, stat)
         
+
+def find_password(username, all_passwords):
+
+    for i in all_passwords:
+        if i.find(f'Username="{username}"') != -1:
+            start_index = i.rfind('Password="') + 10
+            stop_index = i.rfind('" (end)')
+            Line = list(i)
+            password = ''
+            index = start_index
+            while index <= stop_index:
+                password += Line[index]
+                index += 1
+            return password
+    
+    return False
+
+
+def Password_Correct(username, password_input):
+    valid_password = password(username, password_input)
+
+    if valid_password == True:
+        return True 
+    elif valid_password == password_input:
+        return True
+    
+    return False
+
+     
+
+
+# manage passwords
+def password(username, password):
+    try:
+        with open("Passwords.txt") as f:
+            all_passwords = f.readlines()
+
+    # Create File if it doesn't exist
+    except FileNotFoundError:
+        with open("Passwords.txt", 'x') as f:
+            f.write(f'Username="{username}" Password="{password}" (end)\n')
+            return True
+    
+    # see if user already has account
+    valid_password = find_password(username, all_passwords)
+    
+    # if user doesn't have account
+    if valid_password == False:
+        try:
+            with open("Passwords.txt", "a") as f:
+                f.write(f'Username="{username}" Password="{password}" (end)\n')
+                return True
+        except Exception as e:
+            print(f"Can't add user: {e}")
+            return
+        
+    return password
+    
+            
+
+        
+
+
+
+
+             
+
+
