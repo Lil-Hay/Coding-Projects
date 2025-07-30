@@ -151,7 +151,8 @@ def write_stats(nickname, stat):
     '''
     pass stat as "W" to add win, "L" to add loss, "T" to add tie
     '''
-    
+    if nickname == None:
+        return
     try:
         user = find_user(nickname)
 
@@ -192,7 +193,7 @@ def find_password(username, all_passwords):
     for i in all_passwords:
         if i.find(f'Username="{username}"') != -1:
             start_index = i.rfind('Password="') + 10
-            stop_index = i.rfind('" (end)')
+            stop_index = i.rfind('" (end)') - 1
             Line = list(i)
             password = ''
             index = start_index
@@ -219,6 +220,8 @@ def Password_Correct(username, password_input):
 
 # manage passwords
 def password(username, password):
+    if password == None:
+        return
     try:
         with open("Passwords.txt") as f:
             all_passwords = f.readlines()
@@ -242,7 +245,7 @@ def password(username, password):
             print(f"Can't add user: {e}")
             return
         
-    return password
+    return valid_password
     
             
 

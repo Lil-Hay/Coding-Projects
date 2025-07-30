@@ -6,17 +6,27 @@ from grid import Grid as grid
 import Files
 
 def close_both():
-    global Client_1, Client_2
-    try:
-        send("Other play lost connection... restarting server.", Client_1, "14")
-    except:
-        pass
-    Client_1.close()
-    try:
-        send("Other play lost connection... restarting server.", Client_1, "14")
-    except:
-        pass
-    Client_2.close()
+    global Client_1, Client_2, closed
+    
+    if closed != True:
+        closed = True
+        try:
+            send("Other player lost connection... restarting server.", Client_1, "14")
+        except:
+            print("Client 1 disconnected")
+        try:
+            Client_1.close()
+        except:
+            pass
+        try:
+            send("Other player lost connection... restarting server.", Client_2, "14")
+        except:
+            print("Client 2 disconnected")
+        try:
+            Client_2.close()
+        except:
+            pass
+
 
 
 def create_socket(clients=1, production=False):
@@ -29,6 +39,7 @@ def create_socket(clients=1, production=False):
             Socket.bind(('0.0.0.0', 9090))
         else:
             Socket.bind((socket.gethostbyname(socket.gethostname()), 9090))
+            print("NOT PRODUCTION")
     except:
         print("handled bind exception") 
     else:
@@ -63,9 +74,18 @@ def send(message='', Client=False, command=None):
     if Client == False:
         try:
             Client_1.send(message.encode('utf-8'))
-            Client_2.send(message.encode('utf-8'))
+
         except:
-            print("Connection Failed on send to both clients")
+            print("Connection Failed on send to both clients, Client 1")
+            restart = True
+            close_both()
+            return
+        
+        try:
+            Client_2.send(message.encode('utf-8'))
+
+        except:
+            print("Connection Failed on send to both clients, Client 2")
             restart = True
             close_both()
             return
@@ -102,7 +122,12 @@ def receive(client, type=int):
             
     if type == str:
         try:
-            return client.recv(1024).decode('utf-8')
+            data = client.recv(1024).decode('utf-8')
+            if data == "":
+                return False
+            if data != None:
+                return data
+            
         except:
             print("Connection Falied on receive str")
             close_both()
@@ -303,7 +328,7 @@ def game_main():
         send_stats()
 
         wait(3)
-
+        
         game()
 
         Client_1_First = not Client_1_First
@@ -313,6 +338,7 @@ def game_main():
 def grab_user(Client):
     send("Enter your Nickname:", Client, "13")
 
+    
     if Client==Client_1:
         global Client_1_Nick
         Client_1_Nick = receive(Client, str)
@@ -322,14 +348,21 @@ def grab_user(Client):
         Client_2_Nick = receive(Client, str)
         username = Client_2_Nick
 
+
     tries = 0
     while tries < 5:
         send("Enter your password:", Client, "13")
         if Files.Password_Correct(username, receive(Client, str)) == True:
             return
-        
-    send("Too many failed attempts. If you'd like to change your password contact Server Admin", Client, "14")
-    Client.close()
+        send("Wrong Password, Try again", Client, '12')
+        wait(1.5)
+        tries += 1
+    
+    send("Too many failed attempts\nIf you'd like to change your password, contact Server Admin", Client, "14")
+    try:
+        Client.close()
+    except:
+        pass
     return
     
 
@@ -340,9 +373,10 @@ def grab_user(Client):
 def main():
     global restart
     global Server
+    global closed
     Server = create_socket(2, True)
     while True:
-
+        closed = False
         restart = False
 
        
@@ -359,6 +393,7 @@ def main():
             print(f"Connected to second client {addr2}")
             grab_user(Client_2)
             send("Welcome to Tik Tak Toe!", False, '12')
+        
         
 
         if restart == False:
