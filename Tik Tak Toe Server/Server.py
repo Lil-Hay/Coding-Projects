@@ -4,28 +4,34 @@ from time import sleep as wait
 from random import randrange
 from grid import Grid as grid
 import Files
+def check_client(client):
+    global Client_1, Client_2
+    if client == Client_1:
+        return 1
+    if client == Client_2:
+        return 2
 
 def close_both():
-    global Client_1, Client_2, closed
+    global Client_1, Client_2, closed, Client_1_Nick, Client_2_Nick
     
     if closed != True:
         closed = True
-        try:
-            send("Other player lost connection... restarting server.", Client_1, "14")
-        except:
-            print("Client 1 disconnected")
-        try:
-            Client_1.close()
-        except:
-            pass
-        try:
-            send("Other player lost connection... restarting server.", Client_2, "14")
-        except:
-            print("Client 2 disconnected")
-        try:
-            Client_2.close()
-        except:
-            pass
+
+        if send("Other player lost connection... waiting for another player.", Client_1, "12") == False: 
+            print("Client 1 disconnected") # Client 1 disconnects
+            Client_1, Client_1_Nick = None, None
+            if send("Other player lost connection... waiting for another player.", Client_2, "12") == False: 
+                print("Client 2 disconnected") # client 1 is still here but client 2 is not
+                Client_2, Client_2_Nick = None, None
+                return
+        else: 
+            if send("Other player lost connection... waiting for another player.", Client_2, "12") == False: 
+                print("Client 2 disconnected") # client 1 is still here but client 2 is not
+                Client_2, Client_2_Nick = None, None
+                return
+            else: 
+                return # both clients are still here
+
 
 
 
@@ -71,6 +77,7 @@ def send(message='', Client=False, command=None):
             message += 'DISCONNECT'
 
     
+    
     if Client == False:
         try:
             Client_1.send(message.encode('utf-8'))
@@ -79,7 +86,7 @@ def send(message='', Client=False, command=None):
             print("Connection Failed on send to both clients, Client 1")
             restart = True
             close_both()
-            return
+            return False
         
         try:
             Client_2.send(message.encode('utf-8'))
@@ -88,15 +95,15 @@ def send(message='', Client=False, command=None):
             print("Connection Failed on send to both clients, Client 2")
             restart = True
             close_both()
-            return
+            return False
     else:        
         try: # try catch so server doesn't crash with unhandled exception
             Client.send(message.encode('utf-8'))
         except:
-            print("Connection Failed on send to client")
+            print(f"Connection Failed on send to client {check_client(Client)}")
             restart = True
             close_both()
-            return
+            return False
 
 
 def receive(client, type=int):
@@ -115,10 +122,10 @@ def receive(client, type=int):
             return int(decoded_transmission) # return back int to use with other fuctions
     
         except: #handle exception
-            print("Connection Failed on receive int")
+            print(f"Connection Failed on receive int from Client {check_client(client)}")
             close_both()
             restart = True
-            return
+            return False
             
     if type == str:
         try:
@@ -129,7 +136,7 @@ def receive(client, type=int):
                 return data
             
         except:
-            print("Connection Falied on receive str")
+            print(f"Connection Falied on receive str from Client {check_client(client)}")
             close_both()
             restart = True
             return
@@ -261,6 +268,9 @@ def game():
             if turns == 5: # tie scenerio
                 break
 
+            if restart == True:
+                return
+
             # second player turn
             send(board_str(), False, '12')
             send("Waiting on other player.", Client_1, '2')
@@ -285,6 +295,10 @@ def game():
                 
             if turns == 5: # tie scenerio
                 break
+
+            if restart == True:
+                return
+
 
             # first player turn
             send(board_str(), False, '12')
@@ -316,14 +330,20 @@ def send_stats():
 
 
 def game_main():
-    
+
+    if restart != True:
+        send("Welcome to Tik Tak Toe!", False, '12')
+
+
     while True:
         if restart == True:
             return
     
         if "Client_1_First" not in globals():
             global Client_1_First
-            Client_1_First = bool(randrange(0, 2))
+            Client_1_First = False
+
+        wait(0.5)
 
         send_stats()
 
@@ -375,26 +395,29 @@ def main():
     global Server
     global closed
     Server = create_socket(2, True)
+    global Client_1, Client_2
+    Client_1, Client_2 = None, None
     while True:
         closed = False
         restart = False
 
-       
         # getting ready for players
-        global Client_1, Client_2
+        if Client_1 is None:
+            if Client_2 != None:
+                wait(0.5)
+                send("Other player disconnected, Waiting for Second Player", Client_2, "12")
+            Client_1, addr1 = Server.accept()
+            print(f"Connected to first client {addr1}")
+            grab_user(Client_1)
+            send("Waiting for Second Player", Client_1, "12")
+        else:
+            wait(0.5)
+            send("Other player disconnected, Waiting for Second Player", Client_1, "12")
 
-        Client_1, addr1 = Server.accept()
-        print(f"Connected to first client {addr1}")
-        grab_user(Client_1)
-        send("Waiting for Second Player", Client_1, "12")
-
-        if restart == False:
-            Client_2, addr2 = Server.accept()
-            print(f"Connected to second client {addr2}")
-            grab_user(Client_2)
-            send("Welcome to Tik Tak Toe!", False, '12')
-        
-        
+        if restart == False and Client_1 != None and Client_2 is None:
+                Client_2, addr2 = Server.accept()
+                print(f"Connected to second client {addr2}")
+                grab_user(Client_2)
 
         if restart == False:
             game_main()
