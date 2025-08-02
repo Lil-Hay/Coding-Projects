@@ -1,7 +1,7 @@
 import grid
 import random
 from os import system
-from time import sleep
+from time import sleep, perf_counter
 board = grid.Grid(9, 9, ".")
 
 
@@ -57,7 +57,7 @@ attempts = 0
 
 
 x = 0
-
+start_time = perf_counter()
 while True:
     create_colum(x)
     retry = False
@@ -67,15 +67,12 @@ while True:
         for y in range(9):
             if check_row(y) == False:
                 retry = True
-    if x is 8 and retry is False:
+    if x == 8 and retry == False:
         break
     if retry == True:
         attempts += 1
         if x >= 5 and attempts >= 100000:
-            system('cls')
-            print("bruh")
             attempts = 0
-            sleep(4)
             for x in range(9):
                 for y in range(9):
                     board.set(x, y, ".")
@@ -86,7 +83,8 @@ while True:
     if retry == False:
         attempts = 0
         x += 1
-    print(board)
-
+stop_time = perf_counter()
+result_time = stop_time - start_time
 system('cls')
 print(board)
+print(f'\nIt took: {result_time:.6f} seconds')
