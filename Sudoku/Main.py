@@ -1,24 +1,19 @@
+from os import system
+from time import perf_counter
+import multiprocessing
 import grid
 import random
-from os import system
-from time import sleep, perf_counter
-board = grid.Grid(9, 9, ".")
 
-
-def not_used(x, y):
-    if board.get(x, y) == ".":
-        return True
-    else:
-        return False
     
-def create_colum(x):
+def create_colum(board, x):
     options = [1,2,3,4,5,6,7,8,9]
     for y in range(9):
         number = random.choice(options)
         board.set(x, y, number)
         options.remove(number)
+    return board
 
-def check_row(y):
+def check_row(board, y):
     options = [1,2,3,4,5,6,7,8,9]
     for x in range(9):
         number = board.get(x, y)
@@ -29,7 +24,7 @@ def check_row(y):
                 options.remove(number)
     return True
 
-def Squares_valid():
+def Squares_valid(board):
     Square_x = 0
     Square_y = 0
     while True:
@@ -50,41 +45,72 @@ def Squares_valid():
             Square_x = 0
             Square_y += 3
         else:
-            Square_x += 3    
+            Square_x += 3 
+
+
+
+def generate_board(result_queue):
     
-attempts = 0
+    board = grid.Grid(9, 9, ".")
+    attempts = 0
+    x = 0
+    while True:
+        board = create_colum(board, x)
+        retry = False
 
+        if Squares_valid(board) == False:
+            retry = True
 
+        if retry == False:
+            for y in range(9):
+                if check_row(board, y) == False:
+                    retry = True
 
-x = 0
-start_time = perf_counter()
-while True:
-    create_colum(x)
-    retry = False
-    if Squares_valid() == False:
-        retry = True
-    if retry == False:
-        for y in range(9):
-            if check_row(y) == False:
-                retry = True
-    if x == 8 and retry == False:
-        break
-    if retry == True:
-        attempts += 1
-        if x >= 5 and attempts >= 100000:
+        if x == 8 and retry == False:
+            result_queue.put(board)
+            break
+
+        if retry == True:
+            attempts += 1
+            if x >= 5 and attempts >= 100000:
+                attempts = 0
+                for x in range(9):
+                    for y in range(9):
+                        board.set(x, y, ".")
+                x = 0
+           
+        if retry == False:
             attempts = 0
-            for x in range(9):
-                for y in range(9):
-                    board.set(x, y, ".")
-            x = 0
+            x += 1
 
-         
-                 
-    if retry == False:
-        attempts = 0
-        x += 1
-stop_time = perf_counter()
-result_time = stop_time - start_time
-system('cls')
-print(board)
-print(f'\nIt took: {result_time:.6f} seconds')
+def create_board():
+    num_cores = multiprocessing.cpu_count()
+    manager = multiprocessing.Manager()
+    result_queue = manager.Queue()
+    process = []
+
+    for i in range(num_cores):
+        process.append(multiprocessing.Process(target=generate_board, args=(result_queue,)))
+    
+    for i in range(num_cores):
+        process[i].start()
+
+    board = result_queue.get()
+
+    for i in range(num_cores):
+        process[i].kill()
+
+    return board
+
+def main():
+    system('cls')
+    board = create_board()
+    print(board)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
