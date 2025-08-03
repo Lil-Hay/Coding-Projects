@@ -84,6 +84,10 @@ def generate_board(result_queue):
             x += 1
 
 def create_board():
+    '''
+    function that creates a Sudoku board with all cells filled in meeting all rules
+    '''
+
     num_cores = multiprocessing.cpu_count()
     manager = multiprocessing.Manager()
     result_queue = manager.Queue()
@@ -109,6 +113,7 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
 
 
