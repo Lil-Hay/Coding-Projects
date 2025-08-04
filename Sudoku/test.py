@@ -1,10 +1,5 @@
-def return_xy():
-    x = 3
-    y = 5
+def test(list=[]):
+    for i in list:
+        print(i)
 
-    return x, y
-
-x, y = return_xy()
-
-print(x)
-print(y)
+test()
