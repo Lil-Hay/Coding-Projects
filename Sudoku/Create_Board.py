@@ -108,8 +108,12 @@ def create_board():
 
 def main():
     system('cls')
+    start_time = perf_counter()
     board = create_board()
+    stop_time = perf_counter()
+    final_time = stop_time - start_time
     print(board)
+    print(f'Finished in {final_time:.6f} seconds!')
 
 
 if __name__ == "__main__":

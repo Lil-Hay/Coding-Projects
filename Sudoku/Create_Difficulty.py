@@ -184,7 +184,6 @@ def generate_difficulty(board, difficulty, result_queue):
         else:
             attempts = 0
 
-    print(removed_values)
     result_queue.put(board)
         
 
@@ -240,4 +239,5 @@ def main():
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     main()
