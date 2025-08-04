@@ -59,7 +59,7 @@ def main():
     # grab user input
     while True:
         try:
-            user_input = int(input("What diffuculty would you like? (1: for Easy 2: for Medium 3: for Hard.): "))
+            user_input = int(input("What diffuculty would you like? (1: for Easy 2: for Medium 3: for Hard (might take awhile to generate).): "))
         except TypeError:
             print("Please enter a number (1-3) not text")
         else:
