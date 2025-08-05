@@ -4,7 +4,14 @@ from os import system
 from time import sleep
 import copy
 
-board = "8 9 2 6 3 4 1 5 7\n7 5 4 2 1 9 8 3 6\n3 1 6 8 5 7 9 2 4\n6 2 1 3 8 5 4 7 9\n4 3 8 9 7 1 5 6 2\n5 7 9 4 2 6 3 8 1\n1 8 3 7 9 2 6 4 5\n2 4 5 1 6 8 7 9 3\n9 6 7 5 4 3 2 1 8"
+def wrong_input(message, time=1.5, board = None):
+    system('cls')
+    print(message)
+    sleep(time)
+    system('cls')
+    if board != None:
+        display_board(board)
+
 def single_line_board(board):
     '''
     used to convert board object to just numbers in a str
@@ -49,6 +56,89 @@ def display_board(board, single_line=True):
         ' ——————————————————— '
         )
 
+def board_filled(board):
+    for x in range(9):
+        for y in range(9):
+            if board.get(x, y) == '.':
+                return False
+    return True
+
+
+def game(board, original_board):
+    mistakes = 0
+    # solve board loop
+    while True:
+        system('cls')
+        display_board(board)
+
+        # grab user input loop
+        while True:
+            if 'restart' not in locals() or restart == True:
+                restart = False
+                system('cls')
+                display_board(board)
+            # grab Column cord
+            while True:
+                try:
+                    user_input = int(input("Enter Column: "))
+                except TypeError:
+                    wrong_input('Please enter a Column (1-9), not text', board=board)
+                else:
+                    if user_input in range(1, 10):
+                        x = user_input - 1
+                        break
+                    else:
+                        wrong_input('Please enter a Column (1-9)', board=board)
+                        
+            # grab Row cord
+            while restart == False:
+                try:
+                    user_input = int(input('Enter Row (Or "10" to restart process): '))
+                except TypeError:
+                    wrong_input('Please enter a row (1-9) or 10, not letters', board=board)
+                else:
+                    if user_input in range(1, 10):
+                        y = user_input - 1
+                        break
+                    elif user_input == 10:
+                        restart = True
+                    else:
+                        wrong_input('Please enter a row (1-9) or 10', board=board)
+
+            # grab number for cell            
+            while restart == False:
+                try:
+                    user_input = int(input('Enter Value for cell (Or "10" to restart process): '))
+                except TypeError:
+                    wrong_input('Please enter a number (1-9) or 10, not letters', board=board)
+                else:
+                    if user_input in range(1, 10):
+                        number = user_input
+                        break
+                    elif user_input == 10:
+                        restart = True
+                    else:
+                        wrong_input("Please enter a value (1-9) or 10", board=board)
+
+            # user satisfied with setting cell to certain value
+            if restart == False:
+                break
+        # end of grab user input loop
+        
+
+        if original_board.get(x, y) == number:
+            board.set(x, y, number)
+            if board_filled(board) == True:
+                break
+        else:
+            mistakes += 1
+            wrong_input(f"Wrong answer... You have {mistakes} mistakes.", board=board)
+    # end of solve board loop
+    system("cls")
+    display_board(board)
+    print(f"You Solved it! You had {mistakes} mistakes!")
+    sleep(5)
+    
             
     
 
@@ -56,38 +146,38 @@ def main():
     system('cls')
     print("Welcome to Sudoku!")
 
-    # grab user input
     while True:
-        try:
-            user_input = int(input("What diffuculty would you like? (1: for Easy 2: for Medium 3: for Hard (might take awhile to generate).): "))
-        except TypeError:
-            print("Please enter a number (1-3) not text")
-        else:
-            if user_input in range(1, 4):
-                difficulty = user_input
-                break
+        # user decides difficulty
+        while True:
+            try:
+                user_input = int(input("What difficulty would you like? (1: for Easy 2: for Medium 3: for Hard (might take awhile to generate).): "))
+            except TypeError:
+                wrong_input("Please enter a number (1-3) not text")
             else:
-                print("Please enter a number (1-3)")
+                if user_input in range(1, 4):
+                    difficulty = user_input
+                    break
+                else:
+                    wrong_input("Please enter a number (1-3)")
 
-    # create valid boards
-    board = Create_Board.create_board()
-    orginal_board = copy.deepcopy(board)
-    display_board(board)
+        # create valid boards
+        board = Create_Board.create_board()
+        orginal_board = copy.deepcopy(board)
 
-    # create puzzle
-    board = Create_Difficulty.create_difficulty(board, difficulty)
-    display_board(board)
+        # create puzzle
+        board = Create_Difficulty.create_difficulty(board, difficulty)
+        game(board, orginal_board)
 
-
-
-
-
-
-
-        
-
-
-
+        while True:
+            system('cls')
+            user_input = input("Would you like to play again? (Y/N): ")
+            user_input.lower()
+            if user_input == 'n':
+                break
+            elif user_input == 'y':
+                return
+            else:
+                wrong_input("Please enter a valid answer (Y/N)")
 
 
 
