@@ -3,62 +3,32 @@
 #include <time.h>
 
 
-typedef struct {
-    int* data;
-    int size;
-    int capacity;
-} DynamicArray;
-
-DynamicArray* createDynamicArray(int initialCapacity) {
-    DynamicArray* array = malloc(sizeof(DynamicArray));
-    array->data = malloc(sizeof(int) * initialCapacity);
-    array->size = initialCapacity;
-    array->capacity = initialCapacity;
-    return array;
-}
-
-int getElement(DynamicArray* array, int index) {
-    if (index < 0 || index >= array->size) {
-        printf("Error: Index out of bounds\n");
-        exit(1);
-    }
-    return array->data[index];
-}
-
-void freeDynamicArray(DynamicArray* array) {
-    free(array->data);
-    free(array);
-}
-void removeElement(DynamicArray* array, int index) {
-    if (index < 0 || index >= array->size) {
-        printf("Error: Index out of bounds\n");
-        exit(1);
-    }
-    // Shift elements to the left to fill the gap
-    for (int i = index; i < array->size - 1; i++) {
-        array->data[i] = array->data[i + 1];
-    }
-    array->size--;
-}
+void shuffle(int *array, size_t n);
+int check_columns(int (*board)[9]);
 
 int main() {
     srand(time(NULL)); // seed the random number generator
     int board[9][9]; // 9x9 board
-    for (int i = 0; i < 9; i++) { // fill the board with random numbers between 1 and 9
-        DynamicArray* numbers = createDynamicArray(9); // create a dynamic array to hold the numbers
-
-        for (int n = 0; n < numbers->size; n++) {
-            numbers->data[n] = n + 1; // Assign a value to each element
-            }
-
-        for (int j = 0; j < 9; j++) {
-            int random = rand() % sizeof(numbers) / sizeof(int); // get a random index
-            board[i][j] = getElement(numbers, random);  // get the element at the random index and assign it to the board
-            removeElement(numbers, random); // remove the element at the random index
+    for (int column = 0; column < 9; column++) {
+        for (int row = 0; row < 9; row++) {
+            board[column][row] = 0; // initialize the board with zeros
         }
+    }  
 
-        freeDynamicArray(numbers);
+    for (int column = 0; column < 9; column++) {// fill the board with random numbers between 1 and 9
+        int column_valid = 0;
+        while (column_valid = 0){
+            int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // create an array of numbers to shuffle
+            shuffle(numbers, sizeof(numbers) / sizeof(int)); // shuffle the array of numbers to put into each cell
+            for (int row = 0; row < 9; row++) {
+                board[column][row] = numbers[row]; // put the shuffled numbers into the board
+            }
+        }
+        column_valid = check_columns(board); // check if columns valid like this
     }
+    
+
+
 
     for (int i = 0; i < 9; i++) { // print the board
         for (int j = 0; j < 9; j++) {
@@ -71,3 +41,45 @@ int main() {
     printf("\n%zu", sizeof(board) / sizeof(int)); // print the size of the board in memory
     return 0;
 }
+
+
+void shuffle(int *array, size_t n)
+{
+    if (n > 1) 
+    {
+        size_t i;
+        for (i = 0; i < n - 1; i++) 
+        {
+          size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
+          int t = array[j];
+          array[j] = array[i];
+          array[i] = t;
+        }
+    }
+}
+
+int check_columns(int (*board)[9]){
+    for (int row = 0; row < 9; row++){
+        int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        for (int column = 0; column < 9; column++){
+            for (int number = 0; number < 9; number++) // find a cord that matches number in numbers
+            {
+                if (board[column][row] == numbers[number]){
+                    numbers[number] = 10;
+                }
+            }
+            int valid;
+            // numbers should be have all empty elements if number only found once in column
+            for (int number = 0; number < 9; number++){
+                valid += numbers[number];
+            }
+            if (valid != 90){
+                return 0;
+            }
+                
+            }
+
+        }
+     return 1;   
+    }
+            
