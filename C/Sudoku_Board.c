@@ -17,14 +17,18 @@ int main() {
 
     for (int column = 0; column < 9; column++) {// fill the board with random numbers between 1 and 9
         int column_valid = 0;
-        while (column_valid = 0){
+        while (column_valid == 0)
+        {
+
             int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // create an array of numbers to shuffle
             shuffle(numbers, sizeof(numbers) / sizeof(int)); // shuffle the array of numbers to put into each cell
+
             for (int row = 0; row < 9; row++) {
                 board[column][row] = numbers[row]; // put the shuffled numbers into the board
             }
+
+            column_valid = check_columns(board); // check if columns valid like this
         }
-        column_valid = check_columns(board); // check if columns valid like this
     }
     
 
@@ -38,7 +42,6 @@ int main() {
             printf("\n");
         } 
     }
-    printf("\n%zu", sizeof(board) / sizeof(int)); // print the size of the board in memory
     return 0;
 }
 
@@ -58,28 +61,27 @@ void shuffle(int *array, size_t n)
     }
 }
 
+
+// first index is column and second is row
 int check_columns(int (*board)[9]){
     for (int row = 0; row < 9; row++){
-        int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+        int numbers[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
         for (int column = 0; column < 9; column++){
-            for (int number = 0; number < 9; number++) // find a cord that matches number in numbers
-            {
-                if (board[column][row] == numbers[number]){
-                    numbers[number] = 10;
-                }
+
+            int number = board[column][row];
+            
+            if (number != 0){
+                numbers[number - 1] += 1;
             }
-            int valid;
-            // numbers should be have all empty elements if number only found once in column
-            for (int number = 0; number < 9; number++){
-                valid += numbers[number];
-            }
-            if (valid != 90){
+        }
+        for (int i = 0; i < 9; i++){
+            if (numbers[i] > 1){
                 return 0;
             }
-                
-            }
-
         }
-     return 1;   
+     
     }
-            
+    return 1;   
+}
