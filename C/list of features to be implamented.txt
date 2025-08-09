@@ -1,0 +1,15 @@
+CREATING VALID BOARD STEPS
+create 9x9 grid (done)
+print grid (done)
+shuffling/randomizing (done)
+generating rows (done)
+checking columns (done)
+checking 3x3 squares (next up)
+implement some logic to backtrack if board gets stuck during generating (tbd)
+
+CREATING PUZZLE FROM VALID BOARD STEPS
+randomly removing cells from board (tbd)
+checking board still valid after removal (tbd)
+implement the backtracking when cell isn't a valid removal(tbd)
+
+ULTIMATLY IMPLEMENT INTO PYTHON OR IMPLEMENT MULTIPROCESSING AND LEVERAGE FULL CPU THEN TURN INTO GAME
