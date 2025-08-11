@@ -4,8 +4,8 @@ print grid (done)
 shuffling/randomizing (done)
 generating rows (done)
 checking columns (done)
-checking 3x3 squares (next up)
-implement some logic to backtrack if board gets stuck during generating (tbd)
+checking 3x3 squares (done)
+implement some logic to backtrack if board gets stuck during generating (done)
 
 CREATING PUZZLE FROM VALID BOARD STEPS
 randomly removing cells from board (tbd)
