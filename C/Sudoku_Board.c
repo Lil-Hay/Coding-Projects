@@ -6,60 +6,15 @@
 void shuffle(int *array, size_t n);
 int check_columns(int (*board)[9]);
 int check_squares(int (*board)[9]);
+void create_board(int board[9][9]);
+void print_board(int board[9][9]);
 
 int main() {
     clock_t start_time = clock();
     srand(time(NULL)); // seed the random number generator
-    int board[9][9]; // 9x9 board
-    for (int column = 0; column < 9; column++) {
-        for (int row = 0; row < 9; row++) {
-            board[column][row] = 0; // initialize the board with zeros
-        }
-    }  
-
-
-
-    for (int column = 0; column < 9; column++) {// fill the board with random numbers between 1 and 9
-        int column_valid = 0, squares_valid = 0, attempts = 0;
-
-        while (column_valid == 0 || squares_valid == 0)
-        {
-
-            int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // create an array of numbers to shuffle
-            shuffle(numbers, sizeof(numbers) / sizeof(int)); // shuffle the array of numbers to put into each cell
-
-            for (int row = 0; row < 9; row++) {
-                board[column][row] = numbers[row]; // put the shuffled numbers into the board
-            }
-        
-
-            column_valid = check_columns(board); // check if columns valid like this
-            squares_valid = check_squares(board); // check if 3x3 grids valid
-            attempts++;
-            if (attempts > 100000){
-                column_valid = 1, squares_valid = 1;
-                for (int column = 0; column < 9; column++) {
-                    for (int row = 0; row < 9; row++) {
-                        board[column][row] = 0; // initialize the board with zeros
-                    }
-                }
-                column = -1;  
-            }
-        }
-        
-    }
-    
-
-
-
-    for (int i = 0; i < 9; i++) { // print the board
-        for (int j = 0; j < 9; j++) {
-            printf("%d ", board[i][j]);
-        }
-        if (i != 8) { // print a new line at the end of each row except the last one
-            printf("\n");
-        } 
-    }
+    int board[9][9];
+    create_board(board);
+    print_board(board);
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("\nTime used to create board %f seconds", time_used);
@@ -146,4 +101,55 @@ int check_squares(int (*board)[9]){
     }
 
     }// end of while true    
+}
+
+void create_board(int board[9][9]){
+    for (int column = 0; column < 9; column++) {
+        for (int row = 0; row < 9; row++) {
+            board[column][row] = 0; // initialize the board with zeros
+        }
+    }  
+
+
+
+    for (int column = 0; column < 9; column++) {// fill the board with random numbers between 1 and 9
+        int column_valid = 0, squares_valid = 0, attempts = 0;
+
+        while (column_valid == 0 || squares_valid == 0)
+        {
+
+            int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // create an array of numbers to shuffle
+            shuffle(numbers, sizeof(numbers) / sizeof(int)); // shuffle the array of numbers to put into each cell
+
+            for (int row = 0; row < 9; row++) {
+                board[column][row] = numbers[row]; // put the shuffled numbers into the board
+            }
+        
+
+            column_valid = check_columns(board); // check if columns valid like this
+            squares_valid = check_squares(board); // check if 3x3 grids valid
+            attempts++;
+            if (attempts > 100000){
+                column_valid = 1, squares_valid = 1;
+                for (int column = 0; column < 9; column++) {
+                    for (int row = 0; row < 9; row++) {
+                        board[column][row] = 0; // initialize the board with zeros
+                    }
+                }
+                column = -1;  
+            }
+        }
+        
+    }
+}
+
+void print_board(int board[9][9]){
+    for (int i = 0; i < 9; i++) { // print the board
+        for (int j = 0; j < 9; j++) {
+            printf("%d ", board[i][j]);
+        }
+        if (i != 8) { // print a new line at the end of each row except the last one
+            printf("\n");
+        } 
+    }
 }
