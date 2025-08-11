@@ -114,6 +114,7 @@ def main():
     final_time = stop_time - start_time
     print(board)
     print(f'Finished in {final_time:.6f} seconds!')
+    input('Press enter to exit: ')
 
 
 if __name__ == "__main__":
