@@ -300,7 +300,7 @@ void create_difficulty(int original_board[9][9], int difficulty){
             board[x][y] = original_board[x][y];
             used_cords[removed_cells] = -1;
 
-            if (attempts > 10){
+            if (attempts > 5){
 
                 if (cells == 62){
 
