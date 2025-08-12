@@ -18,17 +18,40 @@ void turn_cell_to_cords (int cell, int *x, int *y);
 int solver(int board[9][9], int *solutions_ptr);
 void create_difficulty(int original_board[9][9], int difficulty);
 void write_board(int filled_board[9][9], int difficult_board[9][9]);
-void create_sudoku(int difficulty);
+__declspec(dllexport) int* create_board_python();
+__declspec(dllexport) int* create_difficulty_python(int* arr, int difficulty);
 
-void create_sudoku(int difficulty){
+__declspec(dllexport) int* create_difficulty_python(int* arr, int difficulty){
+    srand(time(NULL)); // seed the random number generator
+    int difficultboard[9][9];
+    for (int i = 0; i < 81; i++){
+        difficultboard[i / 9][i % 9] = arr[i];
+    }
+    create_difficulty(difficultboard, difficulty);
+    int new_arr[81];
+    for (int x = 0; x < 9; x++){
+        for (int y = 0; y < 9; y++){
+            new_arr[x * 9 + y] = difficultboard[x][y];
+        }
+    }
+    int* arr_ptr = malloc(sizeof(new_arr));
+    memcpy(arr_ptr, new_arr, sizeof(new_arr));
+    return arr_ptr;
+}
+
+__declspec(dllexport) int* create_board_python(){
     srand(time(NULL)); // seed the random number generator
     int filled_board[9][9];
     create_board(filled_board);
-    int difficult_board[9][9];
-    memcpy(difficult_board, filled_board, sizeof(difficult_board));
-    create_difficulty(difficult_board, 3);
-    write_board(filled_board, difficult_board);
-    return 0;
+    int arr[81];
+    for (int x = 0; x < 9; x++){
+        for (int y = 0; y < 9; y++){
+            arr[x * 9 + y] = filled_board[x][y];
+        }
+    }
+    int* arr_ptr = malloc(sizeof(arr));
+    memcpy(arr_ptr, arr, sizeof(arr));
+    return arr_ptr;
 }
 
 int main() {
@@ -345,7 +368,6 @@ void create_difficulty(int original_board[9][9], int difficulty){
                                 original_board[x][y] = board[x][y];
                             }    
                         }
-                        printf("\n removed %d cells", removed_cells);
                         return;
                     }
                 }        

@@ -12,4 +12,4 @@ randomly removing cells from board (done)
 checking board still valid after removal (done)
 implement the backtracking when cell isn't a valid removal(done)
 
-ULTIMATLY IMPLEMENT INTO PYTHON OR IMPLEMENT MULTIPROCESSING AND LEVERAGE FULL CPU THEN TURN INTO GAME
+ULTIMATLY IMPLEMENT INTO PYTHON OR IMPLEMENT MULTIPROCESSING AND LEVERAGE FULL CPU THEN TURN INTO GAME (no need for full cpu but did get it working with PYTHON)
