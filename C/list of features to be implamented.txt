@@ -8,8 +8,8 @@ checking 3x3 squares (done)
 implement some logic to backtrack if board gets stuck during generating (done)
 
 CREATING PUZZLE FROM VALID BOARD STEPS
-randomly removing cells from board (tbd)
-checking board still valid after removal (tbd)
-implement the backtracking when cell isn't a valid removal(tbd)
+randomly removing cells from board (done)
+checking board still valid after removal (done)
+implement the backtracking when cell isn't a valid removal(done)
 
 ULTIMATLY IMPLEMENT INTO PYTHON OR IMPLEMENT MULTIPROCESSING AND LEVERAGE FULL CPU THEN TURN INTO GAME
