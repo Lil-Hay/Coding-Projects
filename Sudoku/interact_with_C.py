@@ -23,6 +23,8 @@ def create_board(difficulty):
     difficult_board = []
     for i in range(81):
         difficult_board.append(difficult_board_array[i])
+    c_difficult_board_array_ptr.free()
+    c_filled_board_array_ptr.free()
 
     return filled_board, difficult_board
 
