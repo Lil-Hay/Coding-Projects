@@ -1,0 +1,5 @@
+count mistakes (done)
+timer (done)
+main menu
+new game menu (done)
+generate board
