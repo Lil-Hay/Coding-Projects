@@ -17,6 +17,7 @@ int turn_cords_to_cell(int *x, int *y);
 void turn_cell_to_cords (int cell, int *x, int *y);
 int solver(int board[9][9], int *solutions_ptr);
 void create_difficulty(int original_board[9][9], int difficulty);
+void write_board(int filled_board[9][9], int difficult_board[9][9]);
 
 int main() {
     clock_t start_time = clock();
@@ -31,11 +32,39 @@ int main() {
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("\nTime used to create board %f seconds", time_used);
+    write_board(filled_board, difficult_board);
     printf("\npress enter to exit: ");
     getchar();
     return 0;
 }
 
+void write_board(int filled_board[9][9], int difficult_board[9][9]){
+    FILE *fpter;
+    fpter = fopen("Board.txt", "w");
+    for (int x = 0; x < 9; x++){
+        for (int y = 0; y < 9; y++)
+        {
+            int number = filled_board[x][y];
+            char test[1];
+            itoa(number, test, 10);
+            fprintf(fpter, test);
+        }
+    }
+    fprintf(fpter, "\n");    
+    for (int x = 0; x < 9; x++){
+        for (int y = 0; y < 9; y++)
+        {
+            int number = difficult_board[x][y];
+            char test[1];
+            itoa(number, test, 10);
+            fprintf(fpter, test);
+        }
+    
+        
+    }
+    
+    fclose(fpter);
+}
 
 void shuffle(int *array, size_t n)
 {
