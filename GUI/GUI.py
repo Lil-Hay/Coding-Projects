@@ -17,6 +17,7 @@ for x in range(9):
                 filled_board.set(x, y, filled_board_list[(y*9) + x])
 
 print(board)
+print(filled_board)
 
 import tkinter as tk
 root = tk.Tk()
