@@ -1,6 +1,1 @@
-count mistakes (done)
-timer (done)
-main menu
-new game menu
-generate board
-while loop in main then call main menu function that returns after main menu detroyed but returns back a value that corasponds with creating new game or ending
+need to do additional testing and refinement

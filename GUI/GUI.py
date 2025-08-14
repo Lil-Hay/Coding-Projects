@@ -1,11 +1,29 @@
 import tkinter as tk
+from tkinter import ttk
 
-def create_board():
+def create_board(difficulty=str):
     import grid
-    import os
+    match difficulty:
+        case "Easy":
+            difficulty = 1
+        case "Medium":
+            difficulty = 2
+        case "Hard":
+            difficulty = 3
+    def convert_single_line_board(grid, board):
+        for x in range(9):
+            for y in range(9):
+                grid.set(x, y, str(board[(y*9) + x]))
     board = grid.Grid(9, 9)
     filled_board = grid.Grid(9, 9)
+    import interact_with_C
+    filled_board_str, board_str  = interact_with_C.create_board(difficulty)
+    convert_single_line_board(board, board_str)
+    convert_single_line_board(filled_board, filled_board_str)
+    
+    
 
+    """
     with open((os.path.join(os.path.dirname(__file__),"Board.txt"))) as f:
             Board_single_line = f.readline()
             filled_board_single_line = f.readline()
@@ -17,7 +35,7 @@ def create_board():
     for x in range(9):
             for y in range(9):
                     filled_board.set(x, y, filled_board_list[(y*9) + x])
-
+    """
 
     print(board)
     print(filled_board)
@@ -27,7 +45,7 @@ def create_board():
 
 
 def game(board, filled_board):
-    global root
+    global root, new_game
     root = tk.Tk()
     root.title("Sudoku")
     global mistake_count, second, minute, game_frame
@@ -62,7 +80,7 @@ def game(board, filled_board):
             # Determine which 3x3 block the cell belongs to
             block_row = i // 3
             block_col = j // 3
-            if board.get(j, i) == '0':
+            if board.get(j, i) == "0":
                 # Create an Entry widget for the cell
                 cell_entry = tk.Entry(blocks[block_row][block_col], width=4, font=("Arial", 16),
                                         justify="center", relief="solid", bd=1)
@@ -95,7 +113,8 @@ def game(board, filled_board):
             # Update the cells array to point to the new label widget
             cells[i][j] = cell_label
             if check_board_filled() == True:
-                return_to_main()
+                global new_game
+                new_game = 1
         else:
             cells[i][j].config(bg="red")
             global mistake_count
@@ -110,7 +129,12 @@ def game(board, filled_board):
         return True
 
     def update_time():
-        global minute, second
+        global minute, second, new_game
+        if new_game == 1:
+            root.destroy()
+            global return_value
+            return_value = 2
+            return
         second += 1
         if second == 60:
             second = 0
@@ -118,60 +142,45 @@ def game(board, filled_board):
         time = f"{minute} Minutes: {second} Seconds"
         timer.config(text=f"Time: {time}")
         root.after(1000, update_time)
-
-
+    
 
     update_time()
 
-    def transition_to_new_game_menu():
-        # Remove the current game screen
-        game_frame.pack_forget()
-        # Create the new game menu screen
-        global new_game_menu_frame
-        new_game_menu_frame = tk.Frame(root)
-        new_game_menu_frame.pack(fill="both", expand=True)
-
-        # Add widgets to the new game menu screen
-        new_game_menu_label = tk.Label(new_game_menu_frame, text="New Game Menu")
-        new_game_menu_label.pack()
-
-        # Add a button to start a new game
-        start_new_game_button = tk.Button(new_game_menu_frame, text="Start New Game", command=lambda: game(board, filled_board))
-        start_new_game_button.pack()
-
-        # Add a button to quit the game
-        quit_game_button = tk.Button(new_game_menu_frame, text="Quit Game", command=root.destroy)
-        quit_game_button.pack()
+    root.mainloop()
 
 
 def transition_to_game():
     # Remove the current main menu screen
-    global root
+    global root, return_value
     root.destroy()
-    # Create the game screen
-    board, filled_board = create_board()
     # call game and delete this part of call stack
-    game(board, filled_board)
+    return_value = 1
 
-def return_to_main():
-    # Remove the current game screen
-    global root
+def exit():
+    global root, return_value
+    return_value = 0
     root.destroy()
-    main()
-
-    
 
 
-def main():
-    global root, main_menu_frame
+
+
+def main_menu():
+    global root, main_menu_frame, difficulty
     root = tk.Tk()
     root.title("Sudoku")
-
+    def set_difficulty(event):
+        global difficulty
+        difficulty = event.widget.get()
     main_menu_frame = tk.Frame(root)
     main_menu_frame.pack(fill="both", expand=True)
 
     main_menu_label = tk.Label(main_menu_frame, text="Main Menu")
     main_menu_label.pack()
+
+    difficulty_combobox = ttk.Combobox(main_menu_frame, values=["Easy", "Medium", "Hard"])
+    difficulty_combobox.set("Easy")
+    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty)
+    difficulty_combobox.pack()
 
     start_game_button = tk.Button(main_menu_frame, text="Start Game", command=lambda: transition_to_game())
     start_game_button.pack()
@@ -181,6 +190,45 @@ def main():
 
     root.mainloop()
 
+def transition_to_new_game():
+    global return_value
+    global root, new_gameframe
+    root = tk.Tk()
+    root.title("Sudoku")
+
+    new_gameframe = tk.Frame(root)
+    new_gameframe.pack(fill="both", expand=True)
+
+    new_game_label = tk.Label(new_gameframe, text="New Game")
+    new_game_label.pack()
+    
+    stats_label = tk.Label(new_gameframe, text=(f"Stats: Finished in {minute} minutes and {second} seconds with {mistake_count} mistakes"))
+    stats_label.pack()
+
+    start_game_button = tk.Button(new_gameframe, text="Start Game", command=lambda: transition_to_game())
+    start_game_button.pack()
+
+    quit_game_button = tk.Button(new_gameframe, text="Quit Game", command=lambda: exit())
+    quit_game_button.pack()
+
+    root.mainloop()
+
+
+def main():
+    global return_value, new_game, difficulty
+    difficulty = "Easy"
+    return_value = 0
+    main_menu()
+    while True:
+        print(difficulty)
+        new_game = 0
+        if return_value == 2:
+            transition_to_new_game()
+        elif return_value == 1:
+            board, filled_board = create_board(difficulty)
+            game(board, filled_board)
+        elif return_value == 0:
+                    break
 
 
 if __name__ == "__main__":
