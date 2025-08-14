@@ -48,6 +48,7 @@ def game(board, filled_board):
     global root, new_game
     root = tk.Tk()
     root.title("Sudoku")
+    
     global mistake_count, second, minute, game_frame
 
     mistake_count = 0
@@ -143,7 +144,6 @@ def game(board, filled_board):
         timer.config(text=f"Time: {time}")
         root.after(1000, update_time)
     
-
     update_time()
 
     root.mainloop()
@@ -159,18 +159,22 @@ def transition_to_game():
 def exit():
     global root, return_value
     return_value = 0
-    root.destroy()
+    if root.winfo_exists():
+        root.destroy()
+    else:
+        print("Window has already been closed.")
 
-
+def set_difficulty(event):
+    global difficulty
+    difficulty = event.widget.get()
 
 
 def main_menu():
     global root, main_menu_frame, difficulty
     root = tk.Tk()
     root.title("Sudoku")
-    def set_difficulty(event):
-        global difficulty
-        difficulty = event.widget.get()
+    
+    
     main_menu_frame = tk.Frame(root)
     main_menu_frame.pack(fill="both", expand=True)
 
@@ -191,7 +195,7 @@ def main_menu():
     root.mainloop()
 
 def transition_to_new_game():
-    global return_value
+    global return_value, difficulty
     global root, new_gameframe
     root = tk.Tk()
     root.title("Sudoku")
@@ -201,6 +205,11 @@ def transition_to_new_game():
 
     new_game_label = tk.Label(new_gameframe, text="New Game")
     new_game_label.pack()
+
+    difficulty_combobox = ttk.Combobox(new_gameframe, values=["Easy", "Medium", "Hard"])
+    difficulty_combobox.set("Easy")
+    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty)
+    difficulty_combobox.pack()
     
     stats_label = tk.Label(new_gameframe, text=(f"Stats: Finished in {minute} minutes and {second} seconds with {mistake_count} mistakes"))
     stats_label.pack()
