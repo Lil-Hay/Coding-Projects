@@ -1,1 +1,0 @@
-coded all wrong need to use same tk just different top level windows or whatever

@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
+#import os
 
 def create_board(difficulty=str):
     import grid
+    
     match difficulty:
         case "Easy":
             difficulty = 1
@@ -20,10 +22,11 @@ def create_board(difficulty=str):
     filled_board_str, board_str  = interact_with_C.create_board(difficulty)
     convert_single_line_board(board, board_str)
     convert_single_line_board(filled_board, filled_board_str)
-    
-    
-
     """
+    board = grid.Grid(9, 9)
+    filled_board = grid.Grid(9, 9)
+
+    
     with open((os.path.join(os.path.dirname(__file__),"Board.txt"))) as f:
             Board_single_line = f.readline()
             filled_board_single_line = f.readline()
@@ -44,12 +47,16 @@ def create_board(difficulty=str):
 
 
 
-def game(board, filled_board):
-    global root, new_game
-    root = tk.Tk()
-    root.title("Sudoku")
+
+
+
+def game(difficulty=str):
+
+    board, filled_board = create_board(difficulty)
+    global mistake_count, second, minute
+    global root, game_frame
+    root = root
     
-    global mistake_count, second, minute, game_frame
 
     mistake_count = 0
     second = 0
@@ -114,8 +121,8 @@ def game(board, filled_board):
             # Update the cells array to point to the new label widget
             cells[i][j] = cell_label
             if check_board_filled() == True:
-                global new_game
-                new_game = 1
+                print("You won!")
+                new_game_menu()
         else:
             cells[i][j].config(bg="red")
             global mistake_count
@@ -130,115 +137,92 @@ def game(board, filled_board):
         return True
 
     def update_time():
-        global minute, second, new_game
-        if new_game == 1:
-            root.destroy()
-            global return_value
-            return_value = 2
-            return
+        global minute, second, update_time_id
         second += 1
         if second == 60:
             second = 0
             minute += 1
         time = f"{minute} Minutes: {second} Seconds"
         timer.config(text=f"Time: {time}")
-        root.after(1000, update_time)
+        update_time_id = root.after(1000, update_time)
     
     update_time()
 
-    root.mainloop()
 
 
-def transition_to_game():
-    # Remove the current main menu screen
-    global root, return_value
-    root.destroy()
-    # call game and delete this part of call stack
-    return_value = 1
+def new_game_menu():
+    global game_frame, new_game_menu_frame, minute, second, mistake_count, update_time_id
+    root.after_cancel(update_time_id)
+    game_frame.destroy()
+    def set_difficulty():
+        nonlocal difficulty
+        difficulty = difficulty_combobox.get()
+    difficulty = "Easy"
+    new_game_menu_frame = tk.Frame(root)
+    new_game_menu_frame.pack()
 
-def exit():
-    global root, return_value
-    return_value = 0
-    if root.winfo_exists():
-        root.destroy()
-    else:
-        print("Window has already been closed.")
+    new_game_label = tk.Label(new_game_menu_frame, text="New Game")
+    new_game_label.pack()
 
-def set_difficulty(event):
-    global difficulty
-    difficulty = event.widget.get()
+    stats_label = tk.Label(new_game_menu_frame, text=(f"Stats: Finished in {minute} minutes and {second} seconds with {mistake_count} mistakes"))
+    stats_label.pack()
+
+    difficulty_combobox = ttk.Combobox(new_game_menu_frame, values=["Easy", "Medium", "Hard"])
+    difficulty_combobox.set("Easy")
+    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty())
+    difficulty_combobox.pack(pady=10)
+    
+    start_game_button = tk.Button(new_game_menu_frame, text="Start Game", command=lambda: transition_to_newgame(difficulty="Easy"))
+    start_game_button.pack()
+
+    quit_game_button = tk.Button(new_game_menu_frame, text="Quit Game", command=lambda: root.destroy())
+    quit_game_button.pack()
+    
+
+
+def transition_to_newgame(difficulty=str):
+    global new_game_menu_frame
+    new_game_menu_frame.destroy()
+    game(difficulty)
+     
+def transition_to_game(difficulty=str):
+    global main_menu_frame
+    main_menu_frame.destroy()
+    game(difficulty)
+
 
 
 def main_menu():
-    global root, main_menu_frame, difficulty
-    root = tk.Tk()
-    root.title("Sudoku")
-    
-    
-    main_menu_frame = tk.Frame(root)
-    main_menu_frame.pack(fill="both", expand=True)
+    global root, main_menu_frame
 
-    main_menu_label = tk.Label(main_menu_frame, text="Main Menu")
-    main_menu_label.pack()
+    def set_difficulty():
+        nonlocal difficulty
+        difficulty = difficulty_combobox.get()
+    difficulty = "Easy"
+    main_menu_frame = tk.Frame(root)
+    main_menu_frame.pack()
+
+    title_label = tk.Label(main_menu_frame, text="Sudoku Game", font=("Arial", 24))
+    title_label.pack(pady=20)
 
     difficulty_combobox = ttk.Combobox(main_menu_frame, values=["Easy", "Medium", "Hard"])
     difficulty_combobox.set("Easy")
-    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty)
-    difficulty_combobox.pack()
+    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty())
+    difficulty_combobox.pack(pady=10)
 
-    start_game_button = tk.Button(main_menu_frame, text="Start Game", command=lambda: transition_to_game())
-    start_game_button.pack()
+    start_button = tk.Button(main_menu_frame, text="Start Game", command=lambda: transition_to_game(difficulty))
+    start_button.pack(pady=10)
 
-    quit_game_button = tk.Button(main_menu_frame, text="Quit Game", command=root.destroy)
-    quit_game_button.pack()
-
-    root.mainloop()
-
-def transition_to_new_game():
-    global return_value, difficulty
-    global root, new_gameframe
-    root = tk.Tk()
-    root.title("Sudoku")
-
-    new_gameframe = tk.Frame(root)
-    new_gameframe.pack(fill="both", expand=True)
-
-    new_game_label = tk.Label(new_gameframe, text="New Game")
-    new_game_label.pack()
-
-    difficulty_combobox = ttk.Combobox(new_gameframe, values=["Easy", "Medium", "Hard"])
-    difficulty_combobox.set("Easy")
-    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty)
-    difficulty_combobox.pack()
+    quit_game_button = tk.Button(main_menu_frame, text="Quit Game", command=lambda: root.destroy())
+    quit_game_button.pack(pady=10)
     
-    stats_label = tk.Label(new_gameframe, text=(f"Stats: Finished in {minute} minutes and {second} seconds with {mistake_count} mistakes"))
-    stats_label.pack()
-
-    start_game_button = tk.Button(new_gameframe, text="Start Game", command=lambda: transition_to_game())
-    start_game_button.pack()
-
-    quit_game_button = tk.Button(new_gameframe, text="Quit Game", command=lambda: exit())
-    quit_game_button.pack()
-
-    root.mainloop()
 
 
-def main():
-    global return_value, new_game, difficulty
-    difficulty = "Easy"
-    return_value = 0
+
+
+if __name__ == "__main__": 
+    root = tk.Tk()
+    root.title("Sudoku Game")
+    global mistake_count, second, minute
     main_menu()
-    while True:
-        print(difficulty)
-        new_game = 0
-        if return_value == 2:
-            transition_to_new_game()
-        elif return_value == 1:
-            board, filled_board = create_board(difficulty)
-            game(board, filled_board)
-        elif return_value == 0:
-                    break
-
-
-if __name__ == "__main__":
-    main()
+    root.mainloop()
