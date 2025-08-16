@@ -49,6 +49,14 @@ def create_board(difficulty=str):
     print(board)
     print(filled_board)
     """
+    empty_cells = 0
+    for x in range(9):
+        for y in range(9):
+            if board.get(x, y) == "0":
+                empty_cells += 1
+    print(empty_cells)
+
+
     return board, filled_board
 
 
@@ -111,6 +119,12 @@ def game(board, filled_board):
 
     def get_user_input(i, j):
         user_value = cells[i][j].get().strip()
+        def set_all_white():
+            for i in range(9):
+                for j in range(9):
+                    if isinstance(cells[i][j], tk.Entry):
+                        cells[i][j].config(bg="white")
+        set_all_white()
         # Do something with the user values
         if user_value == filled_board.get(j, i):
             # Destroy the entry widget
@@ -124,7 +138,6 @@ def game(board, filled_board):
             # Update the cells array to point to the new label widget
             cells[i][j] = cell_label
             if check_board_filled() == True:
-                print("You won!")
                 new_game_menu()
         else:
             cells[i][j].config(bg="red")
@@ -135,7 +148,7 @@ def game(board, filled_board):
     def check_board_filled():
         for i in range(9):
             for j in range(9):
-                if cells[i][j] == cell_entry:
+                if isinstance(cells[i][j], tk.Entry):
                     return False
         return True
 
@@ -163,7 +176,7 @@ def new_game_menu():
         difficulty = difficulty_combobox.get()
     
     score = 100000
-    score -= (minute * 60) + second
+    score -= ((minute * 60) * 100) + (second * 100)
     score -= (mistake_count * 500)
     if score < 0:
         score = 0
