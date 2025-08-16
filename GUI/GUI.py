@@ -7,11 +7,11 @@ def create_board(difficulty=str):
     
     match difficulty:
         case "Easy":
-            difficulty = 1
+            difficulty = int(1)
         case "Medium":
-            difficulty = 2
+            difficulty = int(2)
         case "Hard":
-            difficulty = 3
+            difficulty = int(3)
     def convert_single_line_board(grid, board):
         for x in range(9):
             for y in range(9):
@@ -38,11 +38,17 @@ def create_board(difficulty=str):
     for x in range(9):
             for y in range(9):
                     filled_board.set(x, y, filled_board_list[(y*9) + x])
-    """
+    
+    empty_cells = 0
+    for x in range(9):
+        for y in range(9):
+            if board.get(x, y) == "0":
+                empty_cells += 1
 
+    print(empty_cells)
     print(board)
     print(filled_board)
-
+    """
     return board, filled_board
 
 
@@ -50,12 +56,9 @@ def create_board(difficulty=str):
 
 
 
-def game(difficulty=str):
+def game(board, filled_board):
 
-    board, filled_board = create_board(difficulty)
-    global mistake_count, second, minute
-    global root, game_frame
-    root = root
+    global mistake_count, second, minute, root, game_frame
     
 
     mistake_count = 0
@@ -154,61 +157,98 @@ def new_game_menu():
     global game_frame, new_game_menu_frame, minute, second, mistake_count, update_time_id
     root.after_cancel(update_time_id)
     game_frame.destroy()
+    difficulty = "Easy"
     def set_difficulty():
         nonlocal difficulty
         difficulty = difficulty_combobox.get()
-    difficulty = "Easy"
+    
+    score = 100000
+    score -= (minute * 60) + second
+    score -= (mistake_count * 500)
+    if score < 0:
+        score = 0
     new_game_menu_frame = tk.Frame(root)
     new_game_menu_frame.pack()
 
-    new_game_label = tk.Label(new_game_menu_frame, text="New Game")
-    new_game_label.pack()
+    score_label = tk.Label(new_game_menu_frame, text=(f"Your final score is {score:,} points"), font=("Arial", 24))
+    score_label.pack(pady=10, padx=10)
 
-    stats_label = tk.Label(new_game_menu_frame, text=(f"Stats: Finished in {minute} minutes and {second} seconds with {mistake_count} mistakes"))
-    stats_label.pack()
+    time_label = tk.Label(new_game_menu_frame, text=(f"You finished in {minute} minutes and {second} seconds"))
+    time_label.pack(pady=10)
+
+    mistakes_label = tk.Label(new_game_menu_frame, text=(f"You made {mistake_count} mistakes"))
+    mistakes_label.pack(pady=10)
 
     difficulty_combobox = ttk.Combobox(new_game_menu_frame, values=["Easy", "Medium", "Hard"])
     difficulty_combobox.set("Easy")
-    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty())
+    difficulty_combobox.bind("<<ComboboxSelected>>", lambda event: set_difficulty())
     difficulty_combobox.pack(pady=10)
     
-    start_game_button = tk.Button(new_game_menu_frame, text="Start Game", command=lambda: transition_to_newgame(difficulty="Easy"))
-    start_game_button.pack()
+    start_game_button = tk.Button(new_game_menu_frame, text="Start Game", command=lambda: transition_to_newgame(difficulty))
+    start_game_button.pack(pady=10)
 
     quit_game_button = tk.Button(new_game_menu_frame, text="Quit Game", command=lambda: root.destroy())
-    quit_game_button.pack()
+    quit_game_button.pack(pady=10)
     
 
 
 def transition_to_newgame(difficulty=str):
     global new_game_menu_frame
     new_game_menu_frame.destroy()
-    game(difficulty)
+    loading_frame = tk.Frame(root)
+    loading_frame.pack()
+    loading_label = tk.Label(loading_frame, text="Loading...", font=("Arial", 32))
+    loading_label.pack(pady=10, padx=10)
+
+    # Update the GUI to display the loading screen
+    root.update_idletasks()
+
+    # Call create_board in a separate thread
+    def create_board_and_start_game():
+        board, filled_board = create_board(difficulty)
+        loading_frame.destroy()
+        game(board, filled_board)
+
+    root.after(0, create_board_and_start_game)
      
 def transition_to_game(difficulty=str):
     global main_menu_frame
     main_menu_frame.destroy()
-    game(difficulty)
+    loading_frame = tk.Frame(root)
+    loading_frame.pack()
+    loading_label = tk.Label(loading_frame, text="Loading...", font=("Arial", 32))
+    loading_label.pack(pady=10, padx=10)
+
+    # Update the GUI to display the loading screen
+    root.update_idletasks()
+
+    # Call create_board in a separate thread
+    def create_board_and_start_game():
+        board, filled_board = create_board(difficulty)
+        loading_frame.destroy()
+        game(board, filled_board)
+
+    root.after(0, create_board_and_start_game)
 
 
 
 def main_menu():
     global root, main_menu_frame
-
+    difficulty = "Easy"
     def set_difficulty():
         nonlocal difficulty
         difficulty = difficulty_combobox.get()
-    difficulty = "Easy"
+    
     main_menu_frame = tk.Frame(root)
     main_menu_frame.pack()
 
-    title_label = tk.Label(main_menu_frame, text="Sudoku Game", font=("Arial", 24))
-    title_label.pack(pady=20)
+    title_label = tk.Label(main_menu_frame, text="Sudoku", font=("Arial", 24))
+    title_label.pack(pady=10)
 
     difficulty_combobox = ttk.Combobox(main_menu_frame, values=["Easy", "Medium", "Hard"])
     difficulty_combobox.set("Easy")
-    difficulty_combobox.bind("<<ComboboxSelected>>", set_difficulty())
-    difficulty_combobox.pack(pady=10)
+    difficulty_combobox.bind("<<ComboboxSelected>>", lambda event: set_difficulty())
+    difficulty_combobox.pack(pady=10, padx=10)
 
     start_button = tk.Button(main_menu_frame, text="Start Game", command=lambda: transition_to_game(difficulty))
     start_button.pack(pady=10)

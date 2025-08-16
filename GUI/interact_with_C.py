@@ -1,7 +1,7 @@
 import ctypes
 import os
 
-def create_board(difficulty):
+def create_board(difficulty=int):
     write_board = ctypes.CDLL(os.path.join(os.path.dirname(__file__), "Sudoku_Board.dll"))
     write_board.create_board_python.argtypes = None
     write_board.create_board_python.restype = ctypes.POINTER(ctypes.c_int)
@@ -27,4 +27,11 @@ def create_board(difficulty):
     return filled_board, difficult_board
 
 if __name__ == "__main__":
-    create_board(3)
+    filled_board, difficult_board = create_board(3)
+    print(filled_board)
+    print(difficult_board)
+    empty_cells = 0
+    for x in range(81):
+        if difficult_board[x] == 0:
+            empty_cells += 1
+    print(empty_cells)
