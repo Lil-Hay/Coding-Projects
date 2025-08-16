@@ -49,14 +49,7 @@ def create_board(difficulty=str):
     print(board)
     print(filled_board)
     """
-    empty_cells = 0
-    for x in range(9):
-        for y in range(9):
-            if board.get(x, y) == "0":
-                empty_cells += 1
-    print(empty_cells)
-
-
+    
     return board, filled_board
 
 
