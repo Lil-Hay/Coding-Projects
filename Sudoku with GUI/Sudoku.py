@@ -49,7 +49,6 @@ def create_board(difficulty=str):
     print(board)
     print(filled_board)
     """
-    
     return board, filled_board
 
 
@@ -59,9 +58,9 @@ def create_board(difficulty=str):
 
 def game(board, filled_board):
 
-    global mistake_count, second, minute, root, game_frame
+    global mistake_count, second, minute, root, game_frame, paused
     
-
+    paused = False
     mistake_count = 0
     second = 0
     minute = 0
@@ -112,6 +111,16 @@ def game(board, filled_board):
 
     def get_user_input(i, j):
         user_value = cells[i][j].get().strip()
+        if paused == True:
+            return
+        if len(user_value) != 1:
+            return
+        try:
+            user_value = int(user_value)
+        except ValueError:
+            return
+        if user_value == 0:
+            return
         def set_all_white():
             for i in range(9):
                 for j in range(9):
@@ -119,7 +128,7 @@ def game(board, filled_board):
                         cells[i][j].config(bg="white")
         set_all_white()
         # Do something with the user values
-        if user_value == filled_board.get(j, i):
+        if user_value == int(filled_board.get(j, i)):
             # Destroy the entry widget
             cells[i][j].destroy()
             # Determine which 3x3 block the cell belongs to
@@ -154,7 +163,31 @@ def game(board, filled_board):
         time = f"{minute} Minutes: {second} Seconds"
         timer.config(text=f"Time: {time}")
         update_time_id = root.after(1000, update_time)
-    
+
+    def pause_game():
+        global paused, paused_frame
+        if paused == False:
+            root.after_cancel(update_time_id)
+            paused = True
+            for i in range(9):
+                for j in range(9):
+                    if isinstance(cells[i][j], tk.Entry):
+                        cells[i][j].config(state="disabled")
+            paused_frame = tk.Frame(root, bg="black", bd=2) # bd for border around the whole grid
+            paused_frame.place(x=0, y=0, relwidth=1, relheight=1)
+            paused_label = tk.Label(paused_frame, text="Game Paused", font=("Arial", 24), bg="black", fg="white")
+            paused_label.pack(pady=10, padx=10)
+            paused_frame.tkraise()
+        elif paused == True:
+            paused_frame.destroy()
+            update_time()
+            for i in range(9):
+                for j in range(9):
+                    if isinstance(cells[i][j], tk.Entry):
+                        cells[i][j].config(state="normal")
+            paused = False    
+        
+    root.bind("p", lambda event: pause_game())
     update_time()
 
 
