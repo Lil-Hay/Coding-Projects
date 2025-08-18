@@ -85,6 +85,16 @@ def game(board, filled_board):
             blocks[i][j] = tk.Frame(sudoku_frame, bd=3, relief="ridge", bg="lightgray")
             blocks[i][j].grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
 
+    def validate_input(P):
+        print(i)
+        print(j)
+        if len(P) > 1:
+            return False
+        if cells[i][j].get() != '' and P != '':
+            return False
+        return P in '123456789'
+    vcmd = root.register(validate_input)
+
     cells = [[None for _ in range(9)] for _ in range(9)]
     for i in range(9):
         for j in range(9):
@@ -94,7 +104,7 @@ def game(board, filled_board):
             if board.get(j, i) == "0":
                 # Create an Entry widget for the cell
                 cell_entry = tk.Entry(blocks[block_row][block_col], width=4, font=("Arial", 16),
-                                        justify="center", relief="solid", bd=1)
+                                        justify="center", relief="solid", bd=1, validate="key", validatecommand=(vcmd, '%P'))
                                 
                 # Place the cell within its respective 3x3 block
                 cell_entry.grid(row=i % 3, column=j % 3, padx=1, pady=1, sticky="nsew")
