@@ -86,12 +86,6 @@ def game(board, filled_board):
             blocks[i][j].grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
 
     def validate_input(P):
-        print(i)
-        print(j)
-        if len(P) > 1:
-            return False
-        if cells[i][j].get() != '' and P != '':
-            return False
         return P in '123456789'
     vcmd = root.register(validate_input)
 
@@ -104,12 +98,12 @@ def game(board, filled_board):
             if board.get(j, i) == "0":
                 # Create an Entry widget for the cell
                 cell_entry = tk.Entry(blocks[block_row][block_col], width=4, font=("Arial", 16),
-                                        justify="center", relief="solid", bd=1, validate="key", validatecommand=(vcmd, '%P'))
+                                        justify="center", relief="solid", bd=1, validate="key", validatecommand=(vcmd, "%P"))
                                 
                 # Place the cell within its respective 3x3 block
                 cell_entry.grid(row=i % 3, column=j % 3, padx=1, pady=1, sticky="nsew")
                 
-                cell_entry.bind("<Return>", lambda event, i=i, j=j: get_user_input(i, j))
+                cell_entry.bind("<Key>", lambda event, i=i, j=j: get_user_input(i, j))
                 cells[i][j] = cell_entry
             else:
                 # Create a Label widget for the cell
@@ -122,14 +116,18 @@ def game(board, filled_board):
     def get_user_input(i, j):
         user_value = cells[i][j].get().strip()
         if paused == True:
+            cells[i][j].delete(0, tk.END)
             return
         if len(user_value) != 1:
+            cells[i][j].delete(0, tk.END)
             return
         try:
             user_value = int(user_value)
         except ValueError:
+            cells[i][j].delete(0, tk.END)
             return
         if user_value == 0:
+            cells[i][j].delete(0, tk.END)
             return
         def set_all_white():
             for i in range(9):
