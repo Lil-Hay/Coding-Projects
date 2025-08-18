@@ -4,7 +4,11 @@
 a = Analysis(
     ['Sudoku.py'],
     pathex=[],
+<<<<<<< HEAD
     binaries=[('./Sudoku_Board.dll', '.')],
+=======
+    binaries=[('C:\\Users\\Hayden Fry\\Desktop\\Coding Projects\\Sudoku with GUI\\Sudoku_Board.dll', '.')],
+>>>>>>> b332988fe00bb174cad815928faa102e939d0329
     datas=[],
     hiddenimports=[],
     hookspath=[],
