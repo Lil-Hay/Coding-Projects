@@ -49,7 +49,6 @@ def create_board(difficulty=str):
     print(board)
     print(filled_board)
     """
-    
     return board, filled_board
 
 
@@ -59,9 +58,9 @@ def create_board(difficulty=str):
 
 def game(board, filled_board):
 
-    global mistake_count, second, minute, root, game_frame
+    global mistake_count, second, minute, root, game_frame, paused
     
-
+    paused = False
     mistake_count = 0
     second = 0
     minute = 0
@@ -86,6 +85,7 @@ def game(board, filled_board):
             blocks[i][j] = tk.Frame(sudoku_frame, bd=3, relief="ridge", bg="lightgray")
             blocks[i][j].grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
 
+
     cells = [[None for _ in range(9)] for _ in range(9)]
     for i in range(9):
         for j in range(9):
@@ -95,12 +95,12 @@ def game(board, filled_board):
             if board.get(j, i) == "0":
                 # Create an Entry widget for the cell
                 cell_entry = tk.Entry(blocks[block_row][block_col], width=4, font=("Arial", 16),
-                                        justify="center", relief="solid", bd=1)
+                                        justify="center", relief="solid", bd=1)#, validate="key", validatecommand=(vcmd, "%P"))
                                 
                 # Place the cell within its respective 3x3 block
                 cell_entry.grid(row=i % 3, column=j % 3, padx=1, pady=1, sticky="nsew")
                 
-                cell_entry.bind("<Return>", lambda event, i=i, j=j: get_user_input(i, j))
+                cell_entry.bind("<Key>", lambda event, i=i, j=j: get_user_input(event, i, j))
                 cells[i][j] = cell_entry
             else:
                 # Create a Label widget for the cell
@@ -110,16 +110,30 @@ def game(board, filled_board):
                 cell_label.grid(row=i % 3, column=j % 3, padx=1, pady=1, sticky="nsew")
                 cells[i][j] = cell_label
 
-    def get_user_input(i, j):
-        user_value = cells[i][j].get().strip()
-        def set_all_white():
+    def get_user_input(event, i, j):
+        user_value = event.char # grab value of key pressed
+        if paused == True: # ignore if game is paused
+            cells[i][j].delete(0, tk.END)
+            return
+        if len(user_value) != 1: # ignore if there is already data in that entry (shouldn't happen anyway)
+            cells[i][j].delete(0, tk.END)
+            return
+        try: # try to convert to int because if they enter anything other than a number it will throw an error
+            user_value = int(user_value)
+        except ValueError:
+            cells[i][j].delete(0, tk.END)
+            return
+        if user_value == 0: # ignore if they enter 0 because that's not a valid answer either
+            cells[i][j].delete(0, tk.END)
+            return
+        def set_all_white(): # reset any cells that may have been turned red
             for i in range(9):
                 for j in range(9):
                     if isinstance(cells[i][j], tk.Entry):
                         cells[i][j].config(bg="white")
         set_all_white()
         # Do something with the user values
-        if user_value == filled_board.get(j, i):
+        if user_value == int(filled_board.get(j, i)): # if the user value is the correct answer to the cell in the board
             # Destroy the entry widget
             cells[i][j].destroy()
             # Determine which 3x3 block the cell belongs to
@@ -132,7 +146,8 @@ def game(board, filled_board):
             cells[i][j] = cell_label
             if check_board_filled() == True:
                 new_game_menu()
-        else:
+        else: # if the user value is incorrect
+            cells[i][j].delete(0, tk.END) # clear the entry
             cells[i][j].config(bg="red")
             global mistake_count
             mistake_count += 1
@@ -154,7 +169,31 @@ def game(board, filled_board):
         time = f"{minute} Minutes: {second} Seconds"
         timer.config(text=f"Time: {time}")
         update_time_id = root.after(1000, update_time)
-    
+
+    def pause_game():
+        global paused, paused_frame
+        if paused == False:
+            root.after_cancel(update_time_id)
+            paused = True
+            for i in range(9):
+                for j in range(9):
+                    if isinstance(cells[i][j], tk.Entry):
+                        cells[i][j].config(state="disabled")
+            paused_frame = tk.Frame(root, bg="black", bd=2) # bd for border around the whole grid
+            paused_frame.place(x=0, y=0, relwidth=1, relheight=1)
+            paused_label = tk.Label(paused_frame, text="Game Paused", font=("Arial", 24), bg="black", fg="white")
+            paused_label.pack(pady=10, padx=10)
+            paused_frame.tkraise()
+        elif paused == True:
+            paused_frame.destroy()
+            update_time()
+            for i in range(9):
+                for j in range(9):
+                    if isinstance(cells[i][j], tk.Entry):
+                        cells[i][j].config(state="normal")
+            paused = False    
+        
+    root.bind("p", lambda event: pause_game())
     update_time()
 
 

@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --add-binary "./Sudoku_Board.dll;." Sudoku.py
