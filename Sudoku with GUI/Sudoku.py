@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-#import os
 
 def create_board(difficulty=str):
     import grid
-    
     match difficulty:
         case "Easy":
             difficulty = int(1)
@@ -22,33 +20,6 @@ def create_board(difficulty=str):
     filled_board_str, board_str  = interact_with_C.create_board(difficulty)
     convert_single_line_board(board, board_str)
     convert_single_line_board(filled_board, filled_board_str)
-    """
-    board = grid.Grid(9, 9)
-    filled_board = grid.Grid(9, 9)
-
-    
-    with open((os.path.join(os.path.dirname(__file__),"Board.txt"))) as f:
-            Board_single_line = f.readline()
-            filled_board_single_line = f.readline()
-    Board_list = list(Board_single_line)
-    filled_board_list = list(filled_board_single_line)
-    for x in range(9):
-            for y in range(9):
-                    board.set(x, y, Board_list[(y*9) + x])
-    for x in range(9):
-            for y in range(9):
-                    filled_board.set(x, y, filled_board_list[(y*9) + x])
-    
-    empty_cells = 0
-    for x in range(9):
-        for y in range(9):
-            if board.get(x, y) == "0":
-                empty_cells += 1
-
-    print(empty_cells)
-    print(board)
-    print(filled_board)
-    """
     return board, filled_board
 
 
