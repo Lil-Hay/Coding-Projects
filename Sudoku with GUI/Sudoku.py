@@ -99,9 +99,9 @@ def game(board, filled_board):
                     
                 # Place the cell within its respective 3x3 block
                 cell_entry.grid(row=i % 3, column=j % 3, padx=1, pady=1, sticky="nsew")
-                cell_entry.bind("<Key>", lambda event, i=i, j=j: get_user_input(event, i, j))
-                cell_entry.bind("<BackSpace>", lambda event, i=i, j=j: cells[i][j].config(bg='white'))
-                cell_entry.bind("<FocusOut>", lambda event, i=i, j=j: reset_cell(i, j))
+                cell_entry.bind("<Key>", lambda event, i=i, j=j: get_user_input(event, i, j)) # check user input
+                cell_entry.bind("<BackSpace>", lambda event, i=i, j=j: cells[i][j].config(bg='white')) # if user deletes answer reset cell
+                cell_entry.bind("<FocusOut>", lambda event, i=i, j=j: reset_cell(i, j)) # if user leaves cell to enter another cell, reset cell
                 cells[i][j] = cell_entry
             else:
                 # Create a Label widget for the cell
