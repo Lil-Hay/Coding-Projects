@@ -89,20 +89,17 @@ def game(board, filled_board):
 
     def get_user_input(event, i, j):
         user_value = event.char # grab value of key pressed
-        if paused == True: # ignore if game is paused
-            cells[i][j].delete(0, tk.END)
+        if user_value == "p": # ignore if they enter 0 because that's not a valid answer either
+            pause_game()
             return "break"
         if len(user_value) != 1: # ignore if there is already data in that entry (shouldn't happen anyway)
-            cells[i][j].delete(0, tk.END)
             return "break"
         try: # try to convert to int because if they enter anything other than a number it will throw an error
             
             user_value = int(user_value)
         except ValueError:
-            cells[i][j].delete(0, tk.END)
             return "break"
         if user_value == 0: # ignore if they enter 0 because that's not a valid answer either
-            cells[i][j].delete(0, tk.END)
             return "break"
         # Do something with the user values
         if user_value == int(filled_board.get(j, i)): # if the user value is the correct answer to the cell in the board
