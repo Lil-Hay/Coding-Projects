@@ -20,6 +20,10 @@ class cell:
         if isinstance(self.piece, piece):
             return self.piece.get_color()
         return "empty"
+    def get_piece_state(self):
+        if isinstance(self.piece, piece):
+            return self.piece.get_flipped()
+        return "empty"
         
 
 class Checkers_Board:
