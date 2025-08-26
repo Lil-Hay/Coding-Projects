@@ -75,6 +75,26 @@ class Checkers_Board:
                 rows.append(value + ' ')
             rows.append("\n")
         return ''.join(rows)
-                
-checkers_board = Checkers_Board()
-print(checkers_board)
+
+def move_backwards(move):
+
+def create_move(user_move):
+
+
+def is_move_valid(checkers_board, move):
+    if move_backwards(move):
+        if checkers_board.p
+
+
+
+
+if __name__ == "__main__":
+    checkers_board = Checkers_Board()
+    print(checkers_board)
+    print("what is the piece you'd like to move?")
+    user_move_x = input("enter x cord: ")
+    user_move_y = input("enter y cord: ")
+    user_move_to_x = input("enter x cord:")
+    user_move_to_y = input("enter y cord: ")
+
+    print(checkers_board)

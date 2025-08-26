@@ -1,0 +1,5 @@
+define a valid move steps:
+1: check that whether flipped, if flipped than can move backwards
+2: check where it's moving IS NOT occupied by piece
+3. check where it's moving is a black cell
+4. if moving multiple spaces must be taking piece
