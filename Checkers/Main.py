@@ -50,6 +50,15 @@ class Checkers_Board:
                         self.board[x][y] = cell("red")
                     if y != 7:    
                         valid = not valid
+    def get_piece_color(self, x, y):
+        if self.board[x][y].get_piece_color() == "empty":
+            return "empty"
+        return self.board[x][y].get_piece_color()
+    
+    def get_piece_state(self, x, y):
+        if self.board[x][y].get_piece_color() == "empty":
+            return "empty"
+        return self.board[x][y].get_piece_state()
     
     def get_value(self, x, y):
         _cell = self.board[x][y]
@@ -76,25 +85,38 @@ class Checkers_Board:
             rows.append("\n")
         return ''.join(rows)
 
-def move_backwards(move):
+def move_backwards(checkers_board, move):
+    if move["move_x"] > move["move_to_x"]:
+        return False
 
-def create_move(user_move):
+    if checkers_board.get_piece_state(move["move_x"], move["move_y"]) == False:
+        return False
 
 
 def is_move_valid(checkers_board, move):
-    if move_backwards(move):
-        if checkers_board.p
+    if checkers_board.get_value(move["move_x"], move["move_y"]) != "red piece":
+        return False
+    if checkers_board.get_value(move["move_to_x"], move["move_to_y"]) != "empty":
+        return False
+    if move_backwards(checkers_board,move):
+        print("move backwards")
+        return
+    print("expected")
 
 
-
+def create_move(checkers_board):
+    print(checkers_board)
+    print("what is the piece you'd like to move?")
+    move_x = int(input("enter x cord: "))
+    move_y = int(input("enter y cord: "))
+    move_to_x = int(input("enter x cord: "))
+    move_to_y = int(input("enter y cord: "))
+    return {"move_x": move_x, "move_y": move_y, "move_to_x": move_to_x, "move_to_y": move_to_y}
 
 if __name__ == "__main__":
     checkers_board = Checkers_Board()
-    print(checkers_board)
-    print("what is the piece you'd like to move?")
-    user_move_x = input("enter x cord: ")
-    user_move_y = input("enter y cord: ")
-    user_move_to_x = input("enter x cord:")
-    user_move_to_y = input("enter y cord: ")
+    move = create_move(checkers_board)
+    is_move_valid(checkers_board, move)
+    
 
     print(checkers_board)
